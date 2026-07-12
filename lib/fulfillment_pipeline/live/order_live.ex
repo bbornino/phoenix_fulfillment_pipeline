@@ -37,12 +37,6 @@ defmodule FulfillmentPipelineWeb.OrderLive do
     {:noreply, socket}
   end
 
-  @impl true
-  def handle_event("start_order", %{"id" => id}, socket) do
-    OrderSupervisor.start_order(String.to_integer(id))
-    {:noreply, socket}
-  end
-
   defp status_color("received"), do: "#888"
   defp status_color("picking"), do: "#f59e0b"
   defp status_color("packing"), do: "#f59e0b"
