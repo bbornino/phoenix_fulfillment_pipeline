@@ -38,12 +38,26 @@ defmodule FulfillmentPipeline.Order.Server do
   def handle_cast(:advance, order) do
     new_status = next_status(order.status)
     {:ok, updated_order} = Fulfillment.update_order(order, %{status: new_status})
+
+    Phoenix.PubSub.broadcast(
+      FulfillmentPipeline.PubSub,
+      "orders",
+      {:order_updated, updated_order}
+    )
+
     {:noreply, updated_order}
   end
 
   @impl true
   def handle_cast(:trigger_exception, order) do
     {:ok, updated_order} = Fulfillment.update_order(order, %{status: "exception"})
+
+    Phoenix.PubSub.broadcast(
+      FulfillmentPipeline.PubSub,
+      "orders",
+      {:order_updated, updated_order}
+    )
+
     {:noreply, updated_order}
   end
 

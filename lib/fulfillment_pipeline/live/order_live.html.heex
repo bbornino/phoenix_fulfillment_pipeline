@@ -1,0 +1,37 @@
+<.header>
+  Fulfillment Pipeline Dashboard
+</.header>
+
+<.table id="pipeline-orders" rows={@orders}>
+  <:col :let={order} label="Order #">{order.order_number}</:col>
+  
+  <:col :let={order} label="Customer">{order.customer_name}</:col>
+  
+  <:col :let={order} label="Status">
+    <span style={"color: #{status_color(order.status)}"}>
+      {order.status}
+    </span>
+  </:col>
+  
+  <:col :let={order} label="Priority">{order.priority}</:col>
+  
+  <:col :let={order} label="Ship Date">{order.estimated_ship_date}</:col>
+  
+  <:action :let={order}>
+    <.button phx-click="advance" phx-value-id={order.id}>
+      Advance
+    </.button>
+  </:action>
+  
+  <:action :let={order}>
+    <.button phx-click="trigger_exception" phx-value-id={order.id}>
+      Exception
+    </.button>
+  </:action>
+  
+  <:action :let={order}>
+    <.button phx-click="start_order" phx-value-id={order.id}>
+      Start
+    </.button>
+  </:action>
+</.table>

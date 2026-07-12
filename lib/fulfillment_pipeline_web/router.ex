@@ -19,6 +19,7 @@ defmodule FulfillmentPipelineWeb.Router do
 
     get "/", PageController, :home
     resources "/orders", OrderController
+    live "/pipeline", OrderLive
   end
 
   # Other scopes may use custom stacks.
