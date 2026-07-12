@@ -3,6 +3,7 @@ defmodule FulfillmentPipelineWeb.OrderController do
 
   alias FulfillmentPipeline.Fulfillment
   alias FulfillmentPipeline.Fulfillment.Order
+  alias FulfillmentPipeline.Order.Supervisor, as: OrderSupervisor
 
   def index(conn, _params) do
     orders = Fulfillment.list_orders()
@@ -17,6 +18,8 @@ defmodule FulfillmentPipelineWeb.OrderController do
   def create(conn, %{"order" => order_params}) do
     case Fulfillment.create_order(order_params) do
       {:ok, order} ->
+        OrderSupervisor.start_order(order.id)
+
         conn
         |> put_flash(:info, "Order created successfully.")
         |> redirect(to: ~p"/orders/#{order}")
@@ -54,6 +57,7 @@ defmodule FulfillmentPipelineWeb.OrderController do
   def delete(conn, %{"id" => id}) do
     order = Fulfillment.get_order!(id)
     {:ok, _order} = Fulfillment.delete_order(order)
+    OrderSupervisor.stop_order(order.id)
 
     conn
     |> put_flash(:info, "Order deleted successfully.")

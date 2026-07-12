@@ -55,6 +55,6 @@ defmodule FulfillmentPipeline.Order.Server do
   defp next_status(status), do: status
 
   defp via(order_id) do
-    {:via, Registry, {FulfillmentPipeline.OrderRegistry, order_id}}
+    {:via, Registry, {FulfillmentPipeline.Order.Registry, order_id}}
   end
 end

@@ -14,7 +14,8 @@ defmodule FulfillmentPipeline.Application do
        query: Application.get_env(:fulfillment_pipeline, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: FulfillmentPipeline.PubSub},
       {Registry, keys: :unique, name: FulfillmentPipeline.Order.Registry},
-      {DynamicSupervisor, name: FulfillmentPipeline.Order.Supervisor, strategy: :one_for_one},
+      {DynamicSupervisor,
+       name: FulfillmentPipeline.Order.DynamicSupervisor, strategy: :one_for_one},
       # Start a worker by calling: FulfillmentPipeline.Worker.start_link(arg)
       # {FulfillmentPipeline.Worker, arg},
       # Start to serve requests, typically the last entry
