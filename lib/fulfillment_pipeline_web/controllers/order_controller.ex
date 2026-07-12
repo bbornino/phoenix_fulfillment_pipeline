@@ -12,7 +12,7 @@ defmodule FulfillmentPipelineWeb.OrderController do
 
   def new(conn, _params) do
     changeset = Fulfillment.change_order(%Order{})
-    render(conn, :new, changeset: changeset)
+    render(conn, :new, changeset: changeset, warehouses: warehouse_options())
   end
 
   def create(conn, %{"order" => order_params}) do
@@ -25,7 +25,7 @@ defmodule FulfillmentPipelineWeb.OrderController do
         |> redirect(to: ~p"/orders/#{order}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
+        render(conn, :new, changeset: changeset, warehouses: warehouse_options())
     end
   end
 
@@ -37,7 +37,7 @@ defmodule FulfillmentPipelineWeb.OrderController do
   def edit(conn, %{"id" => id}) do
     order = Fulfillment.get_order!(id)
     changeset = Fulfillment.change_order(order)
-    render(conn, :edit, order: order, changeset: changeset)
+    render(conn, :edit, order: order, changeset: changeset, warehouses: warehouse_options())
   end
 
   def update(conn, %{"id" => id, "order" => order_params}) do
@@ -50,7 +50,7 @@ defmodule FulfillmentPipelineWeb.OrderController do
         |> redirect(to: ~p"/orders/#{order}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :edit, order: order, changeset: changeset)
+        render(conn, :edit, order: order, changeset: changeset, warehouses: warehouse_options())
     end
   end
 
@@ -62,5 +62,9 @@ defmodule FulfillmentPipelineWeb.OrderController do
     conn
     |> put_flash(:info, "Order deleted successfully.")
     |> redirect(to: ~p"/orders")
+  end
+
+  defp warehouse_options do
+    FulfillmentPipeline.Warehouses.list_warehouses()
   end
 end

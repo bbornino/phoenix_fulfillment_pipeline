@@ -14,6 +14,8 @@ defmodule FulfillmentPipeline.Fulfillment.Order do
     field :warehouse_id, :integer
     field :items, :map
 
+    belongs_to :warehouse, FulfillmentPipeline.Warehouses.Warehouse, define_field: false
+
     timestamps(type: :utc_datetime)
   end
 

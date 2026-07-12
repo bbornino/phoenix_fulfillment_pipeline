@@ -24,6 +24,8 @@
   
   <:item title="Estimated ship date">{@order.estimated_ship_date}</:item>
   
-  <:item title="Warehouse">{@order.warehouse_id}</:item>
+  <:item title="Warehouse">
+    {if @order.warehouse, do: @order.warehouse.name, else: "Unknown"}
+  </:item>
 </.list>
  <.link navigate={~p"/orders"}>Back to orders</.link>

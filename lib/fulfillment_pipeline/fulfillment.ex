@@ -18,7 +18,9 @@ defmodule FulfillmentPipeline.Fulfillment do
 
   """
   def list_orders do
-    Repo.all(Order)
+    Order
+    |> Repo.all()
+    |> Repo.preload(:warehouse)
   end
 
   @doc """
@@ -35,7 +37,11 @@ defmodule FulfillmentPipeline.Fulfillment do
       ** (Ecto.NoResultsError)
 
   """
-  def get_order!(id), do: Repo.get!(Order, id)
+  def get_order!(id) do
+    Order
+    |> Repo.get!(id)
+    |> Repo.preload(:warehouse)
+  end
 
   @doc """
   Creates a order.

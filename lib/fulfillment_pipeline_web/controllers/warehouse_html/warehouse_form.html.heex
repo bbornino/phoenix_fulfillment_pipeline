@@ -1,0 +1,14 @@
+<.form :let={f} for={@changeset} action={@action}>
+  <.input field={f[:name]} type="text" label="Name" />
+  <.input field={f[:city]} type="text" label="City" />
+  <.input field={f[:state]} type="text" label="State" />
+  <.input field={f[:zip]} type="text" label="Zip" />
+  <.input field={f[:capacity]} type="number" label="Capacity" />
+  <.input field={f[:active]} type="checkbox" label="Active" />
+  <.input field={f[:manager_name]} type="text" label="Manager name" />
+  <.input field={f[:manager_email]} type="text" label="Manager email" />
+  <footer>
+    <.button variant="primary">Save Warehouse</.button>
+    <.button :if={@return_to} href={@return_to}>Cancel</.button>
+  </footer>
+</.form>

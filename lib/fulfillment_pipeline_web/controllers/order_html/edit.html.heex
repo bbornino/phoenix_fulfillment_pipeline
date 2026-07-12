@@ -18,8 +18,12 @@
     label="Priority"
     options={["standard", "expedited", "overnight"]}
   /> <.input field={f[:estimated_ship_date]} type="date" label="Estimated ship date" />
-  <.input field={f[:warehouse_id]} type="number" label="Warehouse ID" />
-  <.input field={f[:requires_signature]} type="checkbox" label="Requires signature" />
+  <.input
+    field={f[:warehouse_id]}
+    type="select"
+    label="Warehouse"
+    options={Enum.map(@warehouses, &{&1.name, &1.id})}
+  /> <.input field={f[:requires_signature]} type="checkbox" label="Requires signature" />
   <.input field={f[:notes]} type="textarea" label="Notes" /> <.button>Save Order</.button>
 </.form>
  <.link navigate={~p"/orders"}>Back to orders</.link>
