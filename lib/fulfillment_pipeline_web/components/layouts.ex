@@ -37,26 +37,24 @@ defmodule FulfillmentPipelineWeb.Layouts do
     ~H"""
     <header class="navbar px-4 sm:px-6 lg:px-8">
       <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
+        <a href={~p"/pipeline"} class="flex-1 flex w-fit items-center gap-2">
+          <span class="text-sm font-semibold">Fulfillment Pipeline</span>
         </a>
       </div>
       <div class="flex-none">
         <ul class="flex flex-column px-1 space-x-4 items-center">
+          <li><.link navigate={~p"/pipeline"} class="btn btn-ghost">Dashboard</.link></li>
+          <li><.link navigate={~p"/orders"} class="btn btn-ghost">Orders</.link></li>
+          <li><.link navigate={~p"/orders/new"} class="btn btn-ghost">New Order</.link></li>
+          <li><.link navigate={~p"/warehouses"} class="btn btn-ghost">Warehouses</.link></li>
           <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
+            <a href="https://github.com/bbornino/phoenix_fulfillment_pipeline" class="btn btn-ghost">GitHub</a>
           </li>
           <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
+            <a href="https://bornino.net" class="btn btn-ghost">Portfolio</a>
           </li>
           <li>
             <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://phoenix.hexdocs.pm/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
           </li>
         </ul>
       </div>

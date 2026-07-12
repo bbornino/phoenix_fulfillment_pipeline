@@ -39,35 +39,8 @@
     </script>
   </head>
   <body>
-    <nav style="background: #1e293b; padding: 0.75rem 1.5rem; display: flex; align-items: center; gap: 2rem;">
-      <span style="color: #f8fafc; font-weight: 600; font-size: 1rem;">
-        Fulfillment Pipeline
-      </span>
-      <.link
-        navigate={~p"/pipeline"}
-        style="color: #94a3b8; text-decoration: none; font-size: 0.875rem;"
-      >
-        Dashboard
-      </.link>
-      <.link
-        navigate={~p"/orders"}
-        style="color: #94a3b8; text-decoration: none; font-size: 0.875rem;"
-      >
-        Orders
-      </.link>
-      <.link
-        navigate={~p"/orders/new"}
-        style="color: #94a3b8; text-decoration: none; font-size: 0.875rem;"
-      >
-        New Order
-      </.link>
-      <.link
-        navigate={~p"/warehouses"}
-        style="color: #94a3b8; text-decoration: none; font-size: 0.875rem;"
-      >
-        Warehouses
-      </.link>
-    </nav>
-    {@inner_content}
+    <Layouts.app flash={@flash}>
+      {@inner_content}
+    </Layouts.app>
   </body>
 </html>

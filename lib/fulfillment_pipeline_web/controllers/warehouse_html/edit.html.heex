@@ -1,8 +1,10 @@
-<Layouts.app flash={@flash}>
-  <.header>
-    Edit Warehouse {@warehouse.id}
-    <:subtitle>Use this form to manage warehouse records in your database.</:subtitle>
-  </.header>
+<.header>
+  Edit Warehouse {@warehouse.id}
+  <:subtitle>Use this form to manage warehouse records in your database.</:subtitle>
+</.header>
 
-  <.warehouse_form changeset={@changeset} action={~p"/warehouses/#{@warehouse}"} return_to={~p"/warehouses"} />
-</Layouts.app>
+<.warehouse_form
+  changeset={@changeset}
+  action={~p"/warehouses/#{@warehouse}"}
+  return_to={~p"/warehouses"}
+/>

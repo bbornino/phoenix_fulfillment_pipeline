@@ -1,25 +1,23 @@
-<Layouts.app flash={@flash}>
-  <.header>
-    Warehouse {@warehouse.id}
-    <:subtitle>This is a warehouse record from your database.</:subtitle>
-    <:actions>
-      <.button navigate={~p"/warehouses"}>
-        <.icon name="hero-arrow-left" />
-      </.button>
-      <.button variant="primary" navigate={~p"/warehouses/#{@warehouse}/edit?return_to=show"}>
-        <.icon name="hero-pencil-square" /> Edit warehouse
-      </.button>
-    </:actions>
-  </.header>
+<.header>
+  Warehouse {@warehouse.id}
+  <:subtitle>This is a warehouse record from your database.</:subtitle>
+  <:actions>
+    <.button navigate={~p"/warehouses"}>
+      <.icon name="hero-arrow-left" />
+    </.button>
+    <.button variant="primary" navigate={~p"/warehouses/#{@warehouse}/edit?return_to=show"}>
+      <.icon name="hero-pencil-square" /> Edit warehouse
+    </.button>
+  </:actions>
+</.header>
 
-  <.list>
-    <:item title="Name">{@warehouse.name}</:item>
-    <:item title="City">{@warehouse.city}</:item>
-    <:item title="State">{@warehouse.state}</:item>
-    <:item title="Zip">{@warehouse.zip}</:item>
-    <:item title="Capacity">{@warehouse.capacity}</:item>
-    <:item title="Active">{@warehouse.active}</:item>
-    <:item title="Manager name">{@warehouse.manager_name}</:item>
-    <:item title="Manager email">{@warehouse.manager_email}</:item>
-  </.list>
-</Layouts.app>
+<.list>
+  <:item title="Name">{@warehouse.name}</:item>
+  <:item title="City">{@warehouse.city}</:item>
+  <:item title="State">{@warehouse.state}</:item>
+  <:item title="Zip">{@warehouse.zip}</:item>
+  <:item title="Capacity">{@warehouse.capacity}</:item>
+  <:item title="Active">{@warehouse.active}</:item>
+  <:item title="Manager name">{@warehouse.manager_name}</:item>
+  <:item title="Manager email">{@warehouse.manager_email}</:item>
+</.list>

@@ -1,32 +1,30 @@
-<Layouts.app flash={@flash}>
-  <.header>
-    Listing Warehouses
-    <:actions>
-      <.button href={~p"/warehouses/new"}>
-        <.icon name="hero-plus" /> New Warehouse
-      </.button>
-    </:actions>
-  </.header>
+<.header>
+  Listing Warehouses
+  <:actions>
+    <.button href={~p"/warehouses/new"}>
+      <.icon name="hero-plus" /> New Warehouse
+    </.button>
+  </:actions>
+</.header>
 
-  <.table id="warehouses" rows={@warehouses} row_click={&JS.navigate(~p"/warehouses/#{&1}")}>
-    <:col :let={warehouse} label="Name">{warehouse.name}</:col>
-    <:col :let={warehouse} label="City">{warehouse.city}</:col>
-    <:col :let={warehouse} label="State">{warehouse.state}</:col>
-    <:col :let={warehouse} label="Zip">{warehouse.zip}</:col>
-    <:col :let={warehouse} label="Capacity">{warehouse.capacity}</:col>
-    <:col :let={warehouse} label="Active">{warehouse.active}</:col>
-    <:col :let={warehouse} label="Manager name">{warehouse.manager_name}</:col>
-    <:col :let={warehouse} label="Manager email">{warehouse.manager_email}</:col>
-    <:action :let={warehouse}>
-      <div class="sr-only">
-        <.link navigate={~p"/warehouses/#{warehouse}"}>Show</.link>
-      </div>
-      <.link navigate={~p"/warehouses/#{warehouse}/edit"}>Edit</.link>
-    </:action>
-    <:action :let={warehouse}>
-      <.link href={~p"/warehouses/#{warehouse}"} method="delete" data-confirm="Are you sure?">
-        Delete
-      </.link>
-    </:action>
-  </.table>
-</Layouts.app>
+<.table id="warehouses" rows={@warehouses} row_click={&JS.navigate(~p"/warehouses/#{&1}")}>
+  <:col :let={warehouse} label="Name">{warehouse.name}</:col>
+  <:col :let={warehouse} label="City">{warehouse.city}</:col>
+  <:col :let={warehouse} label="State">{warehouse.state}</:col>
+  <:col :let={warehouse} label="Zip">{warehouse.zip}</:col>
+  <:col :let={warehouse} label="Capacity">{warehouse.capacity}</:col>
+  <:col :let={warehouse} label="Active">{warehouse.active}</:col>
+  <:col :let={warehouse} label="Manager name">{warehouse.manager_name}</:col>
+  <:col :let={warehouse} label="Manager email">{warehouse.manager_email}</:col>
+  <:action :let={warehouse}>
+    <div class="sr-only">
+      <.link navigate={~p"/warehouses/#{warehouse}"}>Show</.link>
+    </div>
+    <.link navigate={~p"/warehouses/#{warehouse}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={warehouse}>
+    <.link href={~p"/warehouses/#{warehouse}"} method="delete" data-confirm="Are you sure?">
+      Delete
+    </.link>
+  </:action>
+</.table>
