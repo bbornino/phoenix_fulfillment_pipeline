@@ -1,0 +1,29 @@
+<.header>
+  Order {@order.order_number}
+  <:actions>
+    <.link href={~p"/orders/#{@order}/edit"}>
+      <.button>Edit order</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Order number">{@order.order_number}</:item>
+  
+  <:item title="Customer name">{@order.customer_name}</:item>
+  
+  <:item title="Customer email">{@order.customer_email}</:item>
+  
+  <:item title="Status">{@order.status}</:item>
+  
+  <:item title="Priority">{@order.priority}</:item>
+  
+  <:item title="Notes">{@order.notes}</:item>
+  
+  <:item title="Requires signature">{@order.requires_signature}</:item>
+  
+  <:item title="Estimated ship date">{@order.estimated_ship_date}</:item>
+  
+  <:item title="Warehouse">{@order.warehouse_id}</:item>
+</.list>
+ <.link navigate={~p"/orders"}>Back to orders</.link>

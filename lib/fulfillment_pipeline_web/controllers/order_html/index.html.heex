@@ -1,0 +1,34 @@
+<.header>
+  Orders
+  <:actions>
+    <.link href={~p"/orders/new"}>
+      <.button>New Order</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="orders" rows={@orders}>
+  <:col :let={order} label="Order #">{order.order_number}</:col>
+  
+  <:col :let={order} label="Customer">{order.customer_name}</:col>
+  
+  <:col :let={order} label="Status">{order.status}</:col>
+  
+  <:col :let={order} label="Priority">{order.priority}</:col>
+  
+  <:col :let={order} label="Ship Date">{order.estimated_ship_date}</:col>
+  
+  <:action :let={order}>
+    <.link href={~p"/orders/#{order}"}>View</.link>
+  </:action>
+  
+  <:action :let={order}>
+    <.link href={~p"/orders/#{order}/edit"}>Edit</.link>
+  </:action>
+  
+  <:action :let={order}>
+    <.link href={~p"/orders/#{order}"} method="delete" data-confirm="Delete this order?">
+      Delete
+    </.link>
+  </:action>
+</.table>

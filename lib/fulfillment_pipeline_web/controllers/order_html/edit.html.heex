@@ -1,0 +1,25 @@
+<.header>
+  Edit Order {@order.order_number}
+</.header>
+
+<.form :let={f} for={@changeset} action={~p"/orders/#{@order}"} method="put">
+  <.input field={f[:order_number]} type="text" label="Order number" />
+  <.input field={f[:customer_name]} type="text" label="Customer name" />
+  <.input field={f[:customer_email]} type="email" label="Customer email" />
+  <.input
+    field={f[:status]}
+    type="select"
+    label="Status"
+    options={["received", "picking", "packing", "shipping", "delivered", "exception"]}
+  />
+  <.input
+    field={f[:priority]}
+    type="select"
+    label="Priority"
+    options={["standard", "expedited", "overnight"]}
+  /> <.input field={f[:estimated_ship_date]} type="date" label="Estimated ship date" />
+  <.input field={f[:warehouse_id]} type="number" label="Warehouse ID" />
+  <.input field={f[:requires_signature]} type="checkbox" label="Requires signature" />
+  <.input field={f[:notes]} type="textarea" label="Notes" /> <.button>Save Order</.button>
+</.form>
+ <.link navigate={~p"/orders"}>Back to orders</.link>
