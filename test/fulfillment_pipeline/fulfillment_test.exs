@@ -8,6 +8,11 @@ defmodule FulfillmentPipeline.FulfillmentTest do
 
     import FulfillmentPipeline.FulfillmentFixtures
 
+    setup do
+      warehouse = FulfillmentPipeline.WarehousesFixtures.warehouse_fixture()
+      %{warehouse: warehouse}
+    end
+
     @invalid_attrs %{
       priority: nil,
       status: nil,
@@ -31,7 +36,7 @@ defmodule FulfillmentPipeline.FulfillmentTest do
       assert Fulfillment.get_order!(order.id) == order
     end
 
-    test "create_order/1 with valid data creates a order" do
+    test "create_order/1 with valid data creates a order", %{warehouse: warehouse} do
       valid_attrs = %{
         priority: "standard",
         status: "received",
@@ -42,7 +47,7 @@ defmodule FulfillmentPipeline.FulfillmentTest do
         notes: "Test notes",
         requires_signature: true,
         estimated_ship_date: ~D[2026-07-15],
-        warehouse_id: 1
+        warehouse_id: warehouse.id
       }
 
       assert {:ok, %Order{} = order} = Fulfillment.create_order(valid_attrs)
@@ -55,14 +60,14 @@ defmodule FulfillmentPipeline.FulfillmentTest do
       assert order.notes == "Test notes"
       assert order.requires_signature == true
       assert order.estimated_ship_date == ~D[2026-07-15]
-      assert order.warehouse_id == 1
+      assert order.warehouse_id == warehouse.id
     end
 
     test "create_order/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Fulfillment.create_order(@invalid_attrs)
     end
 
-    test "update_order/2 with valid data updates the order" do
+    test "update_order/2 with valid data updates the order", %{warehouse: warehouse} do
       order = order_fixture()
 
       update_attrs = %{
@@ -75,7 +80,7 @@ defmodule FulfillmentPipeline.FulfillmentTest do
         notes: "Updated notes",
         requires_signature: false,
         estimated_ship_date: ~D[2026-07-20],
-        warehouse_id: 2
+        warehouse_id: warehouse.id
       }
 
       assert {:ok, %Order{} = order} = Fulfillment.update_order(order, update_attrs)
@@ -88,7 +93,7 @@ defmodule FulfillmentPipeline.FulfillmentTest do
       assert order.notes == "Updated notes"
       assert order.requires_signature == false
       assert order.estimated_ship_date == ~D[2026-07-20]
-      assert order.warehouse_id == 2
+      assert order.warehouse_id == warehouse.id
     end
 
     test "update_order/2 with invalid data returns error changeset" do
@@ -110,7 +115,12 @@ defmodule FulfillmentPipeline.FulfillmentTest do
   end
 
   describe "order validations" do
-    test "rejects invalid email format" do
+    setup do
+      warehouse = FulfillmentPipeline.WarehousesFixtures.warehouse_fixture()
+      %{warehouse: warehouse}
+    end
+
+    test "rejects invalid email format", %{warehouse: warehouse} do
       attrs = %{
         priority: "standard",
         status: "received",
@@ -118,14 +128,14 @@ defmodule FulfillmentPipeline.FulfillmentTest do
         customer_name: "Jane Smith",
         customer_email: "not-an-email",
         estimated_ship_date: ~D[2026-07-15],
-        warehouse_id: 1
+        warehouse_id: warehouse.id
       }
 
       assert {:error, changeset} = Fulfillment.create_order(attrs)
       assert %{customer_email: ["has invalid format"]} = errors_on(changeset)
     end
 
-    test "rejects invalid status" do
+    test "rejects invalid status", %{warehouse: warehouse} do
       attrs = %{
         priority: "standard",
         status: "flying",
@@ -133,14 +143,14 @@ defmodule FulfillmentPipeline.FulfillmentTest do
         customer_name: "Jane Smith",
         customer_email: "jane@example.com",
         estimated_ship_date: ~D[2026-07-15],
-        warehouse_id: 1
+        warehouse_id: warehouse.id
       }
 
       assert {:error, changeset} = Fulfillment.create_order(attrs)
       assert %{status: ["is invalid"]} = errors_on(changeset)
     end
 
-    test "rejects invalid priority" do
+    test "rejects invalid priority", %{warehouse: warehouse} do
       attrs = %{
         priority: "super-duper-rush",
         status: "received",
@@ -148,14 +158,14 @@ defmodule FulfillmentPipeline.FulfillmentTest do
         customer_name: "Jane Smith",
         customer_email: "jane@example.com",
         estimated_ship_date: ~D[2026-07-15],
-        warehouse_id: 1
+        warehouse_id: warehouse.id
       }
 
       assert {:error, changeset} = Fulfillment.create_order(attrs)
       assert %{priority: ["is invalid"]} = errors_on(changeset)
     end
 
-    test "accepts all valid statuses" do
+    test "accepts all valid statuses", %{warehouse: warehouse} do
       ~w(received picking packing shipping delivered exception)
       |> Enum.each(fn status ->
         attrs = %{
@@ -165,14 +175,14 @@ defmodule FulfillmentPipeline.FulfillmentTest do
           customer_name: "Jane Smith",
           customer_email: "jane@example.com",
           estimated_ship_date: ~D[2026-07-15],
-          warehouse_id: 1
+          warehouse_id: warehouse.id
         }
 
         assert {:ok, _order} = Fulfillment.create_order(attrs)
       end)
     end
 
-    test "accepts all valid priorities" do
+    test "accepts all valid priorities", %{warehouse: warehouse} do
       ~w(standard expedited overnight)
       |> Enum.with_index()
       |> Enum.each(fn {priority, index} ->
@@ -183,14 +193,14 @@ defmodule FulfillmentPipeline.FulfillmentTest do
           customer_name: "Jane Smith",
           customer_email: "jane@example.com",
           estimated_ship_date: ~D[2026-07-15],
-          warehouse_id: 1
+          warehouse_id: warehouse.id
         }
 
         assert {:ok, _order} = Fulfillment.create_order(attrs)
       end)
     end
 
-    test "enforces unique order numbers" do
+    test "enforces unique order numbers", %{warehouse: warehouse} do
       attrs = %{
         priority: "standard",
         status: "received",
@@ -198,7 +208,7 @@ defmodule FulfillmentPipeline.FulfillmentTest do
         customer_name: "Jane Smith",
         customer_email: "jane@example.com",
         estimated_ship_date: ~D[2026-07-15],
-        warehouse_id: 1
+        warehouse_id: warehouse.id
       }
 
       assert {:ok, _order} = Fulfillment.create_order(attrs)

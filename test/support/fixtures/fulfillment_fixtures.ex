@@ -1,10 +1,7 @@
 defmodule FulfillmentPipeline.FulfillmentFixtures do
-  @moduledoc """
-  This module defines test helpers for creating
-  entities via the `FulfillmentPipeline.Fulfillment` context.
-  """
-
   def order_fixture(attrs \\ %{}) do
+    warehouse = FulfillmentPipeline.WarehousesFixtures.warehouse_fixture()
+
     {:ok, order} =
       attrs
       |> Enum.into(%{
@@ -17,10 +14,10 @@ defmodule FulfillmentPipeline.FulfillmentFixtures do
         priority: "standard",
         requires_signature: false,
         status: "received",
-        warehouse_id: 1
+        warehouse_id: warehouse.id
       })
       |> FulfillmentPipeline.Fulfillment.create_order()
 
-    order
+    FulfillmentPipeline.Repo.preload(order, :warehouse)
   end
 end

@@ -12,13 +12,13 @@ defmodule FulfillmentPipeline.WarehousesFixtures do
       attrs
       |> Enum.into(%{
         active: true,
-        capacity: 42,
-        city: "some city",
-        manager_email: "some manager_email",
-        manager_name: "some manager_name",
-        name: "some name",
-        state: "some state",
-        zip: "some zip"
+        capacity: 500,
+        city: "Sacramento",
+        manager_email: "joe@fulfillmentpipeline.com",
+        manager_name: "Joe Smith",
+        name: "Sacramento Fulfillment Center",
+        state: "CA",
+        zip: "95814"
       })
       |> FulfillmentPipeline.Warehouses.create_warehouse()
 

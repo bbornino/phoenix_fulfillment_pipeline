@@ -2,7 +2,7 @@ defmodule FulfillmentPipelineWeb.OrderLive do
   use FulfillmentPipelineWeb, :live_view
 
   alias FulfillmentPipeline.Fulfillment
-  alias FulfillmentPipeline.Order.Supervisor, as: OrderSupervisor
+
   alias FulfillmentPipeline.Order.Server
 
   @impl true
