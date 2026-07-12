@@ -108,4 +108,104 @@ defmodule FulfillmentPipeline.FulfillmentTest do
       assert %Ecto.Changeset{} = Fulfillment.change_order(order)
     end
   end
+
+  describe "order validations" do
+    test "rejects invalid email format" do
+      attrs = %{
+        priority: "standard",
+        status: "received",
+        order_number: "ORD-VAL-001",
+        customer_name: "Jane Smith",
+        customer_email: "not-an-email",
+        estimated_ship_date: ~D[2026-07-15],
+        warehouse_id: 1
+      }
+
+      assert {:error, changeset} = Fulfillment.create_order(attrs)
+      assert %{customer_email: ["has invalid format"]} = errors_on(changeset)
+    end
+
+    test "rejects invalid status" do
+      attrs = %{
+        priority: "standard",
+        status: "flying",
+        order_number: "ORD-VAL-002",
+        customer_name: "Jane Smith",
+        customer_email: "jane@example.com",
+        estimated_ship_date: ~D[2026-07-15],
+        warehouse_id: 1
+      }
+
+      assert {:error, changeset} = Fulfillment.create_order(attrs)
+      assert %{status: ["is invalid"]} = errors_on(changeset)
+    end
+
+    test "rejects invalid priority" do
+      attrs = %{
+        priority: "super-duper-rush",
+        status: "received",
+        order_number: "ORD-VAL-003",
+        customer_name: "Jane Smith",
+        customer_email: "jane@example.com",
+        estimated_ship_date: ~D[2026-07-15],
+        warehouse_id: 1
+      }
+
+      assert {:error, changeset} = Fulfillment.create_order(attrs)
+      assert %{priority: ["is invalid"]} = errors_on(changeset)
+    end
+
+    test "accepts all valid statuses" do
+      ~w(received picking packing shipping delivered exception)
+      |> Enum.each(fn status ->
+        attrs = %{
+          priority: "standard",
+          status: status,
+          order_number: "ORD-#{status}",
+          customer_name: "Jane Smith",
+          customer_email: "jane@example.com",
+          estimated_ship_date: ~D[2026-07-15],
+          warehouse_id: 1
+        }
+
+        assert {:ok, _order} = Fulfillment.create_order(attrs)
+      end)
+    end
+
+    test "accepts all valid priorities" do
+      ~w(standard expedited overnight)
+      |> Enum.with_index()
+      |> Enum.each(fn {priority, index} ->
+        attrs = %{
+          priority: priority,
+          status: "received",
+          order_number: "ORD-PRI-#{index}",
+          customer_name: "Jane Smith",
+          customer_email: "jane@example.com",
+          estimated_ship_date: ~D[2026-07-15],
+          warehouse_id: 1
+        }
+
+        assert {:ok, _order} = Fulfillment.create_order(attrs)
+      end)
+    end
+
+    test "enforces unique order numbers" do
+      attrs = %{
+        priority: "standard",
+        status: "received",
+        order_number: "ORD-DUPE-001",
+        customer_name: "Jane Smith",
+        customer_email: "jane@example.com",
+        estimated_ship_date: ~D[2026-07-15],
+        warehouse_id: 1
+      }
+
+      assert {:ok, _order} = Fulfillment.create_order(attrs)
+
+      duplicate_attrs = Map.put(attrs, :customer_name, "Different Name")
+      assert {:error, changeset} = Fulfillment.create_order(duplicate_attrs)
+      assert %{order_number: ["has already been taken"]} = errors_on(changeset)
+    end
+  end
 end
