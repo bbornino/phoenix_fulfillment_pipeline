@@ -8,7 +8,18 @@ defmodule FulfillmentPipeline.FulfillmentTest do
 
     import FulfillmentPipeline.FulfillmentFixtures
 
-    @invalid_attrs %{priority: nil, status: nil, items: nil, order_number: nil, customer_name: nil, customer_email: nil, notes: nil, requires_signature: nil, estimated_ship_date: nil, warehouse_id: nil}
+    @invalid_attrs %{
+      priority: nil,
+      status: nil,
+      items: nil,
+      order_number: nil,
+      customer_name: nil,
+      customer_email: nil,
+      notes: nil,
+      requires_signature: nil,
+      estimated_ship_date: nil,
+      warehouse_id: nil
+    }
 
     test "list_orders/0 returns all orders" do
       order = order_fixture()
@@ -21,19 +32,30 @@ defmodule FulfillmentPipeline.FulfillmentTest do
     end
 
     test "create_order/1 with valid data creates a order" do
-      valid_attrs = %{priority: "some priority", status: "some status", items: %{}, order_number: "some order_number", customer_name: "some customer_name", customer_email: "some customer_email", notes: "some notes", requires_signature: true, estimated_ship_date: ~D[2026-07-11], warehouse_id: 42}
+      valid_attrs = %{
+        priority: "standard",
+        status: "received",
+        items: %{},
+        order_number: "ORD-TEST-001",
+        customer_name: "Jane Smith",
+        customer_email: "jane@example.com",
+        notes: "Test notes",
+        requires_signature: true,
+        estimated_ship_date: ~D[2026-07-15],
+        warehouse_id: 1
+      }
 
       assert {:ok, %Order{} = order} = Fulfillment.create_order(valid_attrs)
-      assert order.priority == "some priority"
-      assert order.status == "some status"
+      assert order.priority == "standard"
+      assert order.status == "received"
       assert order.items == %{}
-      assert order.order_number == "some order_number"
-      assert order.customer_name == "some customer_name"
-      assert order.customer_email == "some customer_email"
-      assert order.notes == "some notes"
+      assert order.order_number == "ORD-TEST-001"
+      assert order.customer_name == "Jane Smith"
+      assert order.customer_email == "jane@example.com"
+      assert order.notes == "Test notes"
       assert order.requires_signature == true
-      assert order.estimated_ship_date == ~D[2026-07-11]
-      assert order.warehouse_id == 42
+      assert order.estimated_ship_date == ~D[2026-07-15]
+      assert order.warehouse_id == 1
     end
 
     test "create_order/1 with invalid data returns error changeset" do
@@ -42,19 +64,31 @@ defmodule FulfillmentPipeline.FulfillmentTest do
 
     test "update_order/2 with valid data updates the order" do
       order = order_fixture()
-      update_attrs = %{priority: "some updated priority", status: "some updated status", items: %{}, order_number: "some updated order_number", customer_name: "some updated customer_name", customer_email: "some updated customer_email", notes: "some updated notes", requires_signature: false, estimated_ship_date: ~D[2026-07-12], warehouse_id: 43}
+
+      update_attrs = %{
+        priority: "expedited",
+        status: "picking",
+        items: %{},
+        order_number: "ORD-TEST-001-UPDATED",
+        customer_name: "Jane Smith Updated",
+        customer_email: "jane.updated@example.com",
+        notes: "Updated notes",
+        requires_signature: false,
+        estimated_ship_date: ~D[2026-07-20],
+        warehouse_id: 2
+      }
 
       assert {:ok, %Order{} = order} = Fulfillment.update_order(order, update_attrs)
-      assert order.priority == "some updated priority"
-      assert order.status == "some updated status"
+      assert order.priority == "expedited"
+      assert order.status == "picking"
       assert order.items == %{}
-      assert order.order_number == "some updated order_number"
-      assert order.customer_name == "some updated customer_name"
-      assert order.customer_email == "some updated customer_email"
-      assert order.notes == "some updated notes"
+      assert order.order_number == "ORD-TEST-001-UPDATED"
+      assert order.customer_name == "Jane Smith Updated"
+      assert order.customer_email == "jane.updated@example.com"
+      assert order.notes == "Updated notes"
       assert order.requires_signature == false
-      assert order.estimated_ship_date == ~D[2026-07-12]
-      assert order.warehouse_id == 43
+      assert order.estimated_ship_date == ~D[2026-07-20]
+      assert order.warehouse_id == 2
     end
 
     test "update_order/2 with invalid data returns error changeset" do
