@@ -12,7 +12,9 @@
   
   <:col :let={order} label="Customer">{order.customer_name}</:col>
   
-  <:col :let={order} label="Status">{order.status}</:col>
+  <:col :let={order} label="Status">
+    <span style={status_color(order.status)}>{order.status}</span>
+  </:col>
   
   <:col :let={order} label="Priority">{order.priority}</:col>
   

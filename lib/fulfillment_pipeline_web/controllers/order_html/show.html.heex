@@ -14,7 +14,7 @@
   
   <:item title="Customer email">{@order.customer_email}</:item>
   
-  <:item title="Status">{@order.status}</:item>
+  <:item title="Status"><span style={status_color(@order.status)}>{@order.status}</span></:item>
   
   <:item title="Priority">{@order.priority}</:item>
   
