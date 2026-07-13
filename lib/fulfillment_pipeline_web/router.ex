@@ -17,7 +17,7 @@ defmodule FulfillmentPipelineWeb.Router do
   scope "/", FulfillmentPipelineWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    get "/", PageController, :redirect_to_pipeline
     resources "/orders", OrderController
     live "/pipeline", OrderLive
     resources "/warehouses", WarehouseController
