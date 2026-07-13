@@ -22,6 +22,7 @@ config :fulfillment_pipeline, FulfillmentPipelineWeb.Endpoint,
 
 # In test we don't send emails
 config :fulfillment_pipeline, FulfillmentPipeline.Mailer, adapter: Swoosh.Adapters.Test
+config :fulfillment_pipeline, :env, :test
 
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false

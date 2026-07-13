@@ -28,7 +28,9 @@ defmodule FulfillmentPipeline.FulfillmentTest do
 
     test "list_orders/0 returns all orders" do
       order = order_fixture()
-      assert Fulfillment.list_orders() == [order]
+      page = Fulfillment.list_orders()
+      assert page.total_entries == 1
+      assert hd(page.entries).id == order.id
     end
 
     test "get_order!/1 returns the order with given id" do
