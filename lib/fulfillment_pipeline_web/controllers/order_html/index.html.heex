@@ -34,3 +34,21 @@
     </.link>
   </:action>
 </.table>
+
+<div style="display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem;">
+  <span style="font-size: 0.875rem; color: #6b7280;">
+    Page {@page.page_number} of {@page.total_pages} — {@page.total_entries} orders
+  </span>
+  
+  <%= if @page.page_number > 1 do %>
+    <.link href={~p"/orders?page=#{@page.page_number - 1}"}>
+      <.button>← Previous</.button>
+    </.link>
+  <% end %>
+  
+  <%= if @page.page_number < @page.total_pages do %>
+    <.link href={~p"/orders?page=#{@page.page_number + 1}"}>
+      <.button>Next →</.button>
+    </.link>
+  <% end %>
+</div>

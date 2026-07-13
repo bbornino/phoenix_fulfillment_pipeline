@@ -5,9 +5,9 @@ defmodule FulfillmentPipelineWeb.OrderController do
   alias FulfillmentPipeline.Fulfillment.Order
   alias FulfillmentPipeline.Order.Supervisor, as: OrderSupervisor
 
-  def index(conn, _params) do
-    orders = Fulfillment.list_orders()
-    render(conn, :index, orders: orders)
+  def index(conn, params) do
+    page = Fulfillment.list_orders(params)
+    render(conn, :index, orders: page.entries, page: page)
   end
 
   def new(conn, _params) do

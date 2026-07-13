@@ -17,10 +17,8 @@ defmodule FulfillmentPipeline.Fulfillment do
       [%Order{}, ...]
 
   """
-  def list_orders do
-    Order
-    |> Repo.all()
-    |> Repo.preload(:warehouse)
+  def list_orders(params \\ %{}) do
+    Order |> preload(:warehouse) |> Repo.paginate(params)
   end
 
   @doc """
