@@ -16,7 +16,6 @@ defmodule FulfillmentPipeline.FulfillmentTest do
     @invalid_attrs %{
       priority: nil,
       status: nil,
-      items: nil,
       order_number: nil,
       customer_name: nil,
       customer_email: nil,
@@ -42,7 +41,6 @@ defmodule FulfillmentPipeline.FulfillmentTest do
       valid_attrs = %{
         priority: "standard",
         status: "received",
-        items: %{},
         order_number: "ORD-TEST-001",
         customer_name: "Jane Smith",
         customer_email: "jane@example.com",
@@ -55,7 +53,6 @@ defmodule FulfillmentPipeline.FulfillmentTest do
       assert {:ok, %Order{} = order} = Fulfillment.create_order(valid_attrs)
       assert order.priority == "standard"
       assert order.status == "received"
-      assert order.items == %{}
       assert order.order_number == "ORD-TEST-001"
       assert order.customer_name == "Jane Smith"
       assert order.customer_email == "jane@example.com"
@@ -75,7 +72,6 @@ defmodule FulfillmentPipeline.FulfillmentTest do
       update_attrs = %{
         priority: "expedited",
         status: "picking",
-        items: %{},
         order_number: "ORD-TEST-001-UPDATED",
         customer_name: "Jane Smith Updated",
         customer_email: "jane.updated@example.com",
@@ -88,7 +84,7 @@ defmodule FulfillmentPipeline.FulfillmentTest do
       assert {:ok, %Order{} = order} = Fulfillment.update_order(order, update_attrs)
       assert order.priority == "expedited"
       assert order.status == "picking"
-      assert order.items == %{}
+
       assert order.order_number == "ORD-TEST-001-UPDATED"
       assert order.customer_name == "Jane Smith Updated"
       assert order.customer_email == "jane.updated@example.com"

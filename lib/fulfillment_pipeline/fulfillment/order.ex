@@ -12,9 +12,9 @@ defmodule FulfillmentPipeline.Fulfillment.Order do
     field :requires_signature, :boolean, default: false
     field :estimated_ship_date, :date
     field :warehouse_id, :integer
-    field :items, :map
 
     belongs_to :warehouse, FulfillmentPipeline.Warehouses.Warehouse, define_field: false
+    has_many :order_items, FulfillmentPipeline.OrderItems.OrderItem
 
     timestamps(type: :utc_datetime)
   end
@@ -34,8 +34,7 @@ defmodule FulfillmentPipeline.Fulfillment.Order do
       :notes,
       :requires_signature,
       :estimated_ship_date,
-      :warehouse_id,
-      :items
+      :warehouse_id
     ])
     |> validate_required([
       :order_number,

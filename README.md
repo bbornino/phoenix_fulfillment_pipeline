@@ -109,6 +109,20 @@ be passed to the carrier API at shipping time.
 Date (not datetime). Represents the target ship date, not a guarantee. In production 
 this would be calculated from priority + warehouse SLA rules.
 
+### order_items
+Normalized line items replacing the previous `items` jsonb field on orders. Each order 
+can have multiple line items with their own SKU, description, quantity, unit price, 
+weight, and status.
+
+Item statuses are more granular than order statuses:
+`pending → picking → picked → packed → shipped`
+with `backordered` and `exception` as exception states.
+
+**Design decision:** SKUs are denormalized as strings into order_items rather than 
+referencing a separate products table. A normalized products/SKU catalog is planned 
+for Sprint 3.
+
+**on_delete: :delete_all** — deleting an order cascades to delete its line items.
 ---
 
 ## Setup

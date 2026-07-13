@@ -34,6 +34,8 @@ defmodule FulfillmentPipelineWeb.OrderLiveTest do
     {:ok, view, _html} = live(conn, ~p"/pipeline")
 
     view |> element("button", "Exception") |> render_click()
+    # Wait for the process to handle the exception
+    Process.sleep(100)
 
     updated_order = FulfillmentPipeline.Fulfillment.get_order!(order.id)
     assert updated_order.status == "exception"
