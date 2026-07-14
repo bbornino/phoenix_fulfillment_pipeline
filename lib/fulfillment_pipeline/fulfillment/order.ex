@@ -12,8 +12,9 @@ defmodule FulfillmentPipeline.Fulfillment.Order do
     field :requires_signature, :boolean, default: false
     field :estimated_ship_date, :date
     field :warehouse_id, :integer
+    field :tracking_number, :string
 
-    belongs_to :warehouse, FulfillmentPipeline.Warehouses.Warehouse, define_field: false
+    belongs_to :carrier, FulfillmentPipeline.Carriers.Carrier
     has_many :order_items, FulfillmentPipeline.OrderItems.OrderItem
 
     timestamps(type: :utc_datetime)
@@ -34,7 +35,9 @@ defmodule FulfillmentPipeline.Fulfillment.Order do
       :notes,
       :requires_signature,
       :estimated_ship_date,
-      :warehouse_id
+      :warehouse_id,
+      :carrier_id,
+      :tracking_number
     ])
     |> validate_required([
       :order_number,
