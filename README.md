@@ -54,6 +54,14 @@ encounters an unexpected state, it crashes. The DynamicSupervisor detects the cr
 and restarts the process automatically, reloading order state from the database. 
 This is verified in the test suite via `Process.exit(pid, :kill)`.
 
+### Process restoration query pattern
+On boot, the process restorer fetches all active orders in a single query, 
+then starts a GenServer per order. Each GenServer loads its own state 
+independently via individual queries. This is intentional — each process 
+owns its state, and the individual query pattern also supports crash recovery 
+where the Supervisor restarts a process with only an order ID.
+
+
 ---
 
 ## Order Data Model
@@ -123,6 +131,23 @@ referencing a separate products table. A normalized products/SKU catalog is plan
 for Sprint 3.
 
 **on_delete: :delete_all** — deleting an order cascades to delete its line items.
+
+### carriers
+Reference table for shipping carriers. Orders reference a carrier once they 
+reach `shipping` status.
+
+Fields: `name`, `code` (unique, 2-10 chars), `active`, `max_weight_lbs`, 
+`tracking_url_template`.
+
+**on_delete: :nilify_all** on orders — deleting a carrier nullifies the 
+carrier reference on orders rather than deleting the orders themselves.
+
+Planned carriers: UPS, FedEx, USPS, OnTrac, FreightCo.
+
+### tracking_number
+String field on orders, populated when status reaches `shipping`. No 
+uniqueness constraint — different carriers can reuse tracking numbers.
+
 ---
 
 ## Setup
