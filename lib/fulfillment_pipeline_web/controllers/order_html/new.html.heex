@@ -1,5 +1,10 @@
 <.header>
   New Order
 </.header>
- <.order_form changeset={@changeset} action={~p"/orders"} warehouses={@warehouses} />
-<.link navigate={~p"/orders"}>Back to orders</.link>
+
+<.order_form
+  changeset={@changeset}
+  action={~p"/orders"}
+  warehouses={@warehouses}
+  carriers={@carriers}
+/> <.link navigate={~p"/orders"}>Back to orders</.link>

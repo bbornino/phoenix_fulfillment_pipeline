@@ -1,5 +1,10 @@
 <.header>
   Edit Order {@order.order_number}
 </.header>
- <.order_form changeset={@changeset} action={~p"/orders/#{@order}"} warehouses={@warehouses} />
-<.link navigate={~p"/orders"}>Back to orders</.link>
+
+<.order_form
+  changeset={@changeset}
+  action={~p"/orders/#{@order}"}
+  warehouses={@warehouses}
+  carriers={@carriers}
+/> <.link navigate={~p"/orders"}>Back to orders</.link>
