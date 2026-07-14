@@ -1,0 +1,81 @@
+<.header>
+  Operations Dashboard
+</.header>
+
+<div class="space-y-8">
+  
+  <div>
+    <h2 class="text-lg font-semibold mb-4">Carriers</h2>
+    
+    <.table id="carriers" rows={@carriers}>
+      <:col :let={carrier} label="Name">{carrier.name}</:col>
+      
+      <:col :let={carrier} label="Code">{carrier.code}</:col>
+      
+      <:col :let={carrier} label="Max Weight (lbs)">{carrier.max_weight_lbs}</:col>
+      
+      <:col :let={carrier} label="Active">
+        <span style={if carrier.active, do: "color: #16a34a", else: "color: #dc2626"}>
+          {if carrier.active, do: "Active", else: "Inactive"}
+        </span>
+      </:col>
+    </.table>
+  </div>
+  
+  <div>
+    <h2 class="text-lg font-semibold mb-4">
+      Low Stock Alerts
+      <span style="color: #dc2626; font-size: 0.875rem; font-weight: normal;">
+        ({length(@low_stock_items)} items need attention)
+      </span>
+    </h2>
+    
+    <%= if Enum.empty?(@low_stock_items) do %>
+      <p style="color: #16a34a">All inventory levels are healthy.</p>
+    <% else %>
+      <.table id="low-stock" rows={@low_stock_items}>
+        <:col :let={item} label="SKU">{item.sku}</:col>
+        
+        <:col :let={item} label="Description">{item.description}</:col>
+        
+        <:col :let={item} label="Warehouse">{item.warehouse.name}</:col>
+        
+        <:col :let={item} label="On Hand">{item.quantity_on_hand}</:col>
+        
+        <:col :let={item} label="Reserved">{item.quantity_reserved}</:col>
+        
+        <:col :let={item} label="Reorder Point">{item.reorder_point}</:col>
+      </.table>
+    <% end %>
+  </div>
+  
+  <div>
+    <h2 class="text-lg font-semibold mb-4">Inventory by Warehouse</h2>
+    
+    <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+      <%= for warehouse <- @warehouses do %>
+        <.button phx-click="select_warehouse" phx-value-id={warehouse.id}>
+          {warehouse.name}
+        </.button>
+      <% end %>
+    </div>
+    
+    <%= if @selected_warehouse_id do %>
+      <.table id="warehouse-inventory" rows={@warehouse_inventory}>
+        <:col :let={item} label="SKU">{item.sku}</:col>
+        
+        <:col :let={item} label="Description">{item.description}</:col>
+        
+        <:col :let={item} label="On Hand">{item.quantity_on_hand}</:col>
+        
+        <:col :let={item} label="Reserved">{item.quantity_reserved}</:col>
+        
+        <:col :let={item} label="Reorder Point">{item.reorder_point}</:col>
+        
+        <:col :let={item} label="Unit Cost">${item.unit_cost}</:col>
+      </.table>
+    <% else %>
+      <p style="color: #6b7280">Select a warehouse to view its inventory.</p>
+    <% end %>
+  </div>
+</div>

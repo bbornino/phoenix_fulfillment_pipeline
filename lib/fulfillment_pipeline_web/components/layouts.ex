@@ -47,6 +47,7 @@ defmodule FulfillmentPipelineWeb.Layouts do
           <li><.link href={~p"/orders"} class="btn btn-ghost">Orders</.link></li>
           <li><.link href={~p"/orders/new"} class="btn btn-ghost">New Order</.link></li>
           <li><.link href={~p"/warehouses"} class="btn btn-ghost">Warehouses</.link></li>
+          <li><.link href={~p"/operations"} class="btn btn-ghost">Operations</.link></li>
           <li>
             <a href="https://github.com/bbornino/phoenix_fulfillment_pipeline" class="btn btn-ghost">GitHub</a>
           </li>

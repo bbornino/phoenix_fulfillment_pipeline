@@ -20,6 +20,7 @@ defmodule FulfillmentPipelineWeb.Router do
     get "/", PageController, :redirect_to_pipeline
     resources "/orders", OrderController
     live "/pipeline", OrderLive
+    live "/operations", OperationsLive
     resources "/warehouses", WarehouseController
   end
 
