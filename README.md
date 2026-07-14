@@ -148,6 +148,35 @@ Planned carriers: UPS, FedEx, USPS, OnTrac, FreightCo.
 String field on orders, populated when status reaches `shipping`. No 
 uniqueness constraint — different carriers can reuse tracking numbers.
 
+### inventory_items
+Tracks stock levels per SKU per warehouse. Each SKU can exist in multiple 
+warehouses but only once per warehouse (unique constraint on 
+`[:warehouse_id, :sku]`).
+
+Fields:
+- `sku` — product identifier, matches SKU on order_items
+- `description` — product name
+- `quantity_on_hand` — physical stock count in the warehouse
+- `quantity_reserved` — allocated to open orders, not yet picked
+- `reorder_point` — alert threshold; when on_hand drops to or below this 
+  level the item appears in low stock reports
+- `unit_cost` — cost per unit (not sale price)
+
+**quantity_available** is a virtual field computed as 
+`quantity_on_hand - quantity_reserved`. Not persisted.
+
+**on_delete: :restrict** on warehouses — a warehouse with inventory cannot 
+be deleted until inventory is cleared.
+
+### Key inventory context functions
+- `list_inventory_items_for_warehouse/1` — returns all SKUs for a specific 
+  warehouse, ordered by SKU
+- `get_inventory_item_by_sku/2` — looks up a specific SKU at a specific 
+  warehouse
+- `low_stock_items/0` — returns all items across all warehouses where 
+  quantity_on_hand is at or below reorder_point. Primary data source for 
+  Claude exception analysis.
+
 ---
 
 ## Setup
