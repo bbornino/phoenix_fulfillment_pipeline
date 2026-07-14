@@ -25,7 +25,7 @@ defmodule FulfillmentPipeline.Order.Server do
 
   @impl true
   def init(order_id) do
-    order = Fulfillment.get_order!(order_id)
+    order = Fulfillment.get_order_for_server!(order_id)
     {:ok, order}
   end
 

@@ -27,5 +27,13 @@
   <:item title="Warehouse">
     {if @order.warehouse, do: @order.warehouse.name, else: "Unknown"}
   </:item>
+  
+  <:item title="Carrier">
+    {if @order.carrier, do: @order.carrier.name, else: "Not assigned"}
+  </:item>
+  
+  <:item title="Tracking number">
+    {if @order.tracking_number, do: @order.tracking_number, else: "Not assigned"}
+  </:item>
 </.list>
  <.link navigate={~p"/orders"}>Back to orders</.link>

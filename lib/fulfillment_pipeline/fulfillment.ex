@@ -18,7 +18,15 @@ defmodule FulfillmentPipeline.Fulfillment do
 
   """
   def list_orders(params \\ %{}) do
-    Order |> preload(:warehouse) |> Repo.paginate(params)
+    Order |> preload([:warehouse, :carrier]) |> Repo.paginate(params)
+  end
+
+  def list_active_orders do
+    import Ecto.Query
+
+    Order
+    |> where([o], o.status != "delivered")
+    |> Repo.all()
   end
 
   @doc """
@@ -38,7 +46,11 @@ defmodule FulfillmentPipeline.Fulfillment do
   def get_order!(id) do
     Order
     |> Repo.get!(id)
-    |> Repo.preload(:warehouse)
+    |> Repo.preload([:warehouse, :carrier])
+  end
+
+  def get_order_for_server!(id) do
+    Repo.get!(Order, id)
   end
 
   @doc """

@@ -19,7 +19,7 @@ defmodule FulfillmentPipeline.Carriers.Carrier do
     carrier
     |> cast(attrs, [:name, :code, :active, :max_weight_lbs, :tracking_url_template])
     |> validate_required([:name, :code, :active, :max_weight_lbs])
-    |> validate_length(:code, min: 2, max: 10)
+    |> validate_length(:code, min: 2, max: 20)
     |> unique_constraint(:code)
   end
 end

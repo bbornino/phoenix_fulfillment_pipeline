@@ -19,7 +19,8 @@ defmodule FulfillmentPipelineWeb.OrderLiveTest do
 
   test "advance button updates order status", %{conn: conn, order: order} do
     FulfillmentPipeline.Order.Supervisor.start_order(order.id)
-
+    # Wait for the process to initialize
+    Process.sleep(100)
     {:ok, view, _html} = live(conn, ~p"/pipeline")
 
     assert view |> element("button", "Advance") |> render_click() =~ ""

@@ -11,9 +11,9 @@ defmodule FulfillmentPipeline.Fulfillment.Order do
     field :notes, :string
     field :requires_signature, :boolean, default: false
     field :estimated_ship_date, :date
-    field :warehouse_id, :integer
     field :tracking_number, :string
 
+    belongs_to :warehouse, FulfillmentPipeline.Warehouses.Warehouse
     belongs_to :carrier, FulfillmentPipeline.Carriers.Carrier
     has_many :order_items, FulfillmentPipeline.OrderItems.OrderItem
 

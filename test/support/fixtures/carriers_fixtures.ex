@@ -12,10 +12,10 @@ defmodule FulfillmentPipeline.CarriersFixtures do
       attrs
       |> Enum.into(%{
         active: true,
-        code: "some code",
-        max_weight_lbs: "120.5",
-        name: "some name",
-        tracking_url_template: "some tracking_url_template"
+        code: "ups-#{System.unique_integer([:positive])}",
+        max_weight_lbs: "150.0",
+        name: "UPS Ground",
+        tracking_url_template: "https://www.ups.com/track?tracknum="
       })
       |> FulfillmentPipeline.Carriers.create_carrier()
 

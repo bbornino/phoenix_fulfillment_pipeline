@@ -8,7 +8,13 @@ defmodule FulfillmentPipeline.CarriersTest do
 
     import FulfillmentPipeline.CarriersFixtures
 
-    @invalid_attrs %{active: nil, code: nil, name: nil, max_weight_lbs: nil, tracking_url_template: nil}
+    @invalid_attrs %{
+      active: nil,
+      code: nil,
+      name: nil,
+      max_weight_lbs: nil,
+      tracking_url_template: nil
+    }
 
     test "list_carriers/0 returns all carriers" do
       carrier = carrier_fixture()
@@ -21,14 +27,22 @@ defmodule FulfillmentPipeline.CarriersTest do
     end
 
     test "create_carrier/1 with valid data creates a carrier" do
-      valid_attrs = %{active: true, code: "some code", name: "some name", max_weight_lbs: "120.5", tracking_url_template: "some tracking_url_template"}
+      valid_attrs = %{
+        active: true,
+        code: "fedex",
+        name: "FedEx Ground",
+        max_weight_lbs: "150.0",
+        tracking_url_template: "https://www.fedex.com/apps/fedextrack/?tracknumbers="
+      }
 
       assert {:ok, %Carrier{} = carrier} = Carriers.create_carrier(valid_attrs)
       assert carrier.active == true
-      assert carrier.code == "some code"
-      assert carrier.name == "some name"
-      assert carrier.max_weight_lbs == Decimal.new("120.5")
-      assert carrier.tracking_url_template == "some tracking_url_template"
+      assert carrier.code == "fedex"
+      assert carrier.name == "FedEx Ground"
+      assert carrier.max_weight_lbs == Decimal.new("150.0")
+
+      assert carrier.tracking_url_template ==
+               "https://www.fedex.com/apps/fedextrack/?tracknumbers="
     end
 
     test "create_carrier/1 with invalid data returns error changeset" do
@@ -37,14 +51,23 @@ defmodule FulfillmentPipeline.CarriersTest do
 
     test "update_carrier/2 with valid data updates the carrier" do
       carrier = carrier_fixture()
-      update_attrs = %{active: false, code: "some updated code", name: "some updated name", max_weight_lbs: "456.7", tracking_url_template: "some updated tracking_url_template"}
+
+      update_attrs = %{
+        active: false,
+        code: "fedex-ltl",
+        name: "FedEx LTL Freight",
+        max_weight_lbs: "2000.0",
+        tracking_url_template: "https://www.fedex.com/apps/fedextrack/?tracknumbers="
+      }
 
       assert {:ok, %Carrier{} = carrier} = Carriers.update_carrier(carrier, update_attrs)
       assert carrier.active == false
-      assert carrier.code == "some updated code"
-      assert carrier.name == "some updated name"
-      assert carrier.max_weight_lbs == Decimal.new("456.7")
-      assert carrier.tracking_url_template == "some updated tracking_url_template"
+      assert carrier.code == "fedex-ltl"
+      assert carrier.name == "FedEx LTL Freight"
+      assert carrier.max_weight_lbs == Decimal.new("2000.0")
+
+      assert carrier.tracking_url_template ==
+               "https://www.fedex.com/apps/fedextrack/?tracknumbers="
     end
 
     test "update_carrier/2 with invalid data returns error changeset" do
