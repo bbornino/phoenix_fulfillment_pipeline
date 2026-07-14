@@ -21,6 +21,24 @@ defmodule FulfillmentPipeline.Inventory do
     Repo.all(InventoryItem)
   end
 
+  def list_inventory_items_for_warehouse(warehouse_id) do
+    InventoryItem
+    |> where([i], i.warehouse_id == ^warehouse_id)
+    |> order_by([i], i.sku)
+    |> Repo.all()
+  end
+
+  def get_inventory_item_by_sku(warehouse_id, sku) do
+    Repo.get_by(InventoryItem, warehouse_id: warehouse_id, sku: sku)
+  end
+
+  def low_stock_items do
+    InventoryItem
+    |> where([i], i.quantity_on_hand <= i.reorder_point)
+    |> preload(:warehouse)
+    |> Repo.all()
+  end
+
   @doc """
   Gets a single inventory_item.
 
