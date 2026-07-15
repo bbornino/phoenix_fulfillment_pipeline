@@ -50,7 +50,11 @@ defmodule FulfillmentPipeline.Order.Server do
 
   @impl true
   def handle_cast(:trigger_exception, order) do
-    {:ok, updated_order} = Fulfillment.update_order(order, %{status: "exception"})
+    {:ok, updated_order} =
+      Fulfillment.update_order(order, %{
+        status: "exception",
+        exception_raised_at: DateTime.utc_now()
+      })
 
     Phoenix.PubSub.broadcast(
       FulfillmentPipeline.PubSub,
