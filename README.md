@@ -199,6 +199,16 @@ password: "postgres",
 hostname: "localhost"
 ```
 
+### Environment Variables
+The Claude API requires an Anthropic API key. Set it before starting the server:
+
+**Windows:**
+Create a `run_server.bat` file (already in `.gitignore`) with:
+set ANTHROPIC_API_KEY=your_anthropic_api_key_here
+iex.bat -S mix phx.server
+
+Get your API key at https://console.anthropic.com
+
 ### Create and migrate database
 ```bash
 mix ecto.create
