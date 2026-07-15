@@ -247,3 +247,10 @@ Test suite covers:
 - No pagination on order list
 - Status transitions are not enforced at the database level
 - Claude API exception analysis is planned but not yet implemented
+
+---
+
+### Security advisories
+Several dependencies have open CVEs (cowlib, mint, phoenix_live_view). 
+This is a portfolio/development project — these would be resolved before 
+any production deployment via dependency updates.
