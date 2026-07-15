@@ -1,181 +1,142 @@
 # Fulfillment Pipeline
 
-A production-grade order fulfillment pipeline built with Elixir, Phoenix, and OTP. 
-Demonstrates real-time order processing using GenServer, DynamicSupervisor, Phoenix 
-PubSub, and LiveView.
+A production-grade order fulfillment pipeline built with Elixir, Phoenix, and OTP.
+Demonstrates real-time order processing using GenServer, DynamicSupervisor, Phoenix
+PubSub, LiveView, and Claude AI exception analysis.
 
-Built as a portfolio project targeting supply chain / fulfillment software engineering 
+Built as a portfolio project targeting supply chain / fulfillment software engineering
 roles. The domain maps directly to OMS/WMS systems used in DTC brand fulfillment.
+
+- **Portfolio:** https://bornino.net/projects/phoenix-fulfillment-pipeline/
+- **GitHub:** https://github.com/bbornino/phoenix_fulfillment_pipeline
 
 ---
 
 ## Architecture
 
 ### Why GenServer per order?
-Each active order runs as its own supervised OTP process. This mirrors how a real 
-fulfillment system works — orders are independent units of work that move through 
+Each active order runs as its own supervised OTP process. This mirrors how a real
+fulfillment system works — orders are independent units of work that move through
 a pipeline concurrently. A problem with one order should never affect another.
 
 Alternatives considered:
-- Single GenServer managing all orders: creates a bottleneck and a single point of 
-  failure
+- Single GenServer managing all orders: creates a bottleneck and a single point of failure
 - Pure database polling: no real-time behavior, adds latency
 
 ### Why DynamicSupervisor?
-Order volume is unknown at compile time. DynamicSupervisor starts and monitors child 
-processes at runtime as orders are created, rather than requiring a fixed child list 
+Order volume is unknown at compile time. DynamicSupervisor starts and monitors child
+processes at runtime as orders are created, rather than requiring a fixed child list
 at startup.
 
 ### Why a Registry?
-GenServer processes are identified by PID, which changes on restart. The Registry maps 
-a stable key (order ID) to the current PID. Callers never deal with PIDs directly — 
+GenServer processes are identified by PID, which changes on restart. The Registry maps
+a stable key (order ID) to the current PID. Callers never deal with PIDs directly —
 they look up an order by ID and the Registry resolves the current process transparently.
 
-### The Hydrator
-On application boot, the Hydrator queries all non-delivered orders and starts a 
-GenServer for each one. Without this, only orders created during the current server 
-session would have live processes. Delivered orders are excluded — they are terminal 
+### Process Restoration (Hydrator)
+On application boot, the process restorer queries all non-delivered orders and starts
+a GenServer for each one. Without this, only orders created during the current server
+session would have live processes. Delivered orders are excluded — they are terminal
 and need no in-memory representation.
 
+The term "Hydrator" is project-specific, not standard OTP terminology. The pattern
+itself — restoring in-memory process state from a persistent store on boot — is
+standard OTP practice, sometimes called a "warm start."
+
 ### Why LiveView instead of React?
-LiveView handles real-time UI updates over a persistent websocket connection without 
-writing JavaScript. PubSub broadcasts order state changes to all connected LiveView 
-clients simultaneously. For internal operational tooling — which is what a fulfillment 
+LiveView handles real-time UI updates over a persistent websocket connection without
+writing JavaScript. PubSub broadcasts order state changes to all connected LiveView
+clients simultaneously. For internal operational tooling — which is what a fulfillment
 dashboard is — this is the correct architectural choice.
 
 ### PubSub pattern
-GenServer processes do not talk to LiveView directly. Instead they broadcast events 
-to a named PubSub topic ("orders"). Any LiveView subscribed to that topic receives 
+GenServer processes do not talk to LiveView directly. Instead they broadcast events
+to a named PubSub topic ("orders"). Any LiveView subscribed to that topic receives
 the event and re-renders. This keeps the pipeline layer decoupled from the UI layer.
 
 ### "Let it crash"
-OTP's fault tolerance model: processes are not defensive. If an order process 
-encounters an unexpected state, it crashes. The DynamicSupervisor detects the crash 
-and restarts the process automatically, reloading order state from the database. 
+OTP's fault tolerance model: processes are not defensive. If an order process
+encounters an unexpected state, it crashes. The DynamicSupervisor detects the crash
+and restarts the process automatically, reloading order state from the database.
 This is verified in the test suite via `Process.exit(pid, :kill)`.
 
-### Process restoration query pattern
-On boot, the process restorer fetches all active orders in a single query, 
-then starts a GenServer per order. Each GenServer loads its own state 
-independently via individual queries. This is intentional — each process 
-owns its state, and the individual query pattern also supports crash recovery 
-where the Supervisor restarts a process with only an order ID.
+### Claude AI Exception Analysis
+When an order enters exception state, an `ExceptionAnalyzer` module runs as a
+supervised Task. It builds a rich prompt from order details, line items, and
+inventory context, then calls the Claude API. Results are saved to the database
+and broadcast via PubSub to update the LiveView dashboard in real time.
 
+The Task runs independently of the websocket connection — if the browser times out
+during a long API call, the analysis still completes and updates when reconnected.
 
 ---
 
-## Order Data Model
+## Data Model
 
-### order_number
-Free-form string. No enforced format at the database level, but the convention used 
-in seeds and production intent is `ORD-YYYY-NNNN` (e.g. `ORD-2026-0042`). Enforced 
-unique at the database level via a unique index.
+### orders
+Core entity. Tracks an order from placement through fulfillment.
 
-In production this would be auto-generated on order creation rather than supplied 
-by the user.
+Key fields:
+- `order_number` — unique string, convention `ORD-YYYY-NNNN`. In production would be auto-generated.
+- `status` — state machine: `received → picking → packing → shipping → delivered`, any stage `→ exception`
+- `priority` — `standard`, `expedited`, `overnight`. Drives SLA and carrier selection.
+- `customer_email` — validated against `~r/^[^\s]+@[^\s]+\.[^\s]+$/`. In production: MX verification or transactional email provider validation.
+- `carrier_id` — FK to carriers, set when order reaches `shipping` status
+- `tracking_number` — populated at shipping. No uniqueness constraint — carriers reuse numbers.
+- `exception_analysis` — text field populated by Claude AI when an order hits exception state
+- `exception_raised_at` — timestamp set when exception is triggered, used to calculate exception duration for Claude analysis
 
-### status (state machine)
-Valid values and intended transitions:
-received → picking → packing → shipping → delivered
-Any stage → exception
-
-Status is validated on write via `validate_inclusion`. Transition enforcement 
-(e.g. preventing delivered → picking) is handled by the GenServer layer, not the 
-database layer. The database accepts any valid status value to support administrative 
-corrections.
-
-### priority
-Valid values: `standard`, `expedited`, `overnight`. Validated on write.
-In production this would drive SLA timers and carrier selection.
-
-### customer_email
-Validated against `~r/^[^\s]+@[^\s]+\.[^\s]+$/` — basic format check confirming 
-no whitespace, an @ symbol, and a domain with a TLD. 
-
-In production this would be supplemented with MX record verification or delegated 
-to the transactional email provider (e.g. SendGrid, Postmark) at send time.
-
-### warehouse_id
-Currently a plain integer referencing one of three seeded warehouse locations:
-- 1 = Sacramento, CA
-- 2 = Dallas, TX  
-- 3 = Columbus, OH
-
-A full `warehouses` table with its own CRUD is planned. The foreign key relationship 
-will be enforced at the database level once that table exists.
-
-### items
-Stored as `jsonb` (Elixir `:map` type). Currently holds a single SKU, description, 
-and quantity. In production this would be an array of line items or a normalized 
-`order_items` table.
-
-### requires_signature
-Boolean. Defaults to false. Drives delivery instructions — in production this would 
-be passed to the carrier API at shipping time.
-
-### estimated_ship_date
-Date (not datetime). Represents the target ship date, not a guarantee. In production 
-this would be calculated from priority + warehouse SLA rules.
+Status transition enforcement is handled at the GenServer layer, not the database layer.
+The database accepts any valid status to support administrative corrections.
 
 ### order_items
-Normalized line items replacing the previous `items` jsonb field on orders. Each order 
-can have multiple line items with their own SKU, description, quantity, unit price, 
-weight, and status.
+Normalized line items. Each order has 1-4 line items with their own SKU, quantity, price, weight, and status.
 
-Item statuses are more granular than order statuses:
-`pending → picking → picked → packed → shipped`
-with `backordered` and `exception` as exception states.
+Item statuses are more granular than order statuses: `pending → picking → picked → packed → shipped`, with `backordered` and `exception` as exception states.
 
-**Design decision:** SKUs are denormalized as strings into order_items rather than 
-referencing a separate products table. A normalized products/SKU catalog is planned 
-for Sprint 3.
+**Design decision:** SKUs are denormalized as strings rather than referencing a separate products table. A normalized products/SKU catalog is a future sprint item.
 
 **on_delete: :delete_all** — deleting an order cascades to delete its line items.
 
+### warehouses
+Six fulfillment centers across the US. Full CRUD via the Warehouses UI.
+
+Fields: `name`, `city`, `state`, `zip`, `capacity`, `active`, `manager_name`, `manager_email`.
+
 ### carriers
-Reference table for shipping carriers. Orders reference a carrier once they 
-reach `shipping` status.
+Reference table for shipping carriers. Seeded with UPS, FedEx, USPS, OnTrac, and FreightCo LTL.
 
-Fields: `name`, `code` (unique, 2-10 chars), `active`, `max_weight_lbs`, 
-`tracking_url_template`.
+Fields: `name`, `code` (unique, 2-10 chars), `active`, `max_weight_lbs`, `tracking_url_template`.
 
-**on_delete: :nilify_all** on orders — deleting a carrier nullifies the 
-carrier reference on orders rather than deleting the orders themselves.
-
-Planned carriers: UPS, FedEx, USPS, OnTrac, FreightCo.
-
-### tracking_number
-String field on orders, populated when status reaches `shipping`. No 
-uniqueness constraint — different carriers can reuse tracking numbers.
+**on_delete: :nilify_all** on orders — deleting a carrier nullifies the carrier reference on orders rather than deleting the orders themselves.
 
 ### inventory_items
-Tracks stock levels per SKU per warehouse. Each SKU can exist in multiple 
-warehouses but only once per warehouse (unique constraint on 
-`[:warehouse_id, :sku]`).
+Stock levels per SKU per warehouse. Unique constraint on `[:warehouse_id, :sku]`.
 
-Fields:
-- `sku` — product identifier, matches SKU on order_items
-- `description` — product name
-- `quantity_on_hand` — physical stock count in the warehouse
-- `quantity_reserved` — allocated to open orders, not yet picked
-- `reorder_point` — alert threshold; when on_hand drops to or below this 
-  level the item appears in low stock reports
-- `unit_cost` — cost per unit (not sale price)
+Fields: `sku`, `description`, `quantity_on_hand`, `quantity_reserved`, `reorder_point`, `unit_cost`.
 
-**quantity_available** is a virtual field computed as 
-`quantity_on_hand - quantity_reserved`. Not persisted.
+`quantity_available` is a virtual field (`on_hand - reserved`). Not persisted.
 
-**on_delete: :restrict** on warehouses — a warehouse with inventory cannot 
-be deleted until inventory is cleared.
+**on_delete: :restrict** — a warehouse with inventory cannot be deleted until inventory is cleared.
 
-### Key inventory context functions
-- `list_inventory_items_for_warehouse/1` — returns all SKUs for a specific 
-  warehouse, ordered by SKU
-- `get_inventory_item_by_sku/2` — looks up a specific SKU at a specific 
-  warehouse
-- `low_stock_items/0` — returns all items across all warehouses where 
-  quantity_on_hand is at or below reorder_point. Primary data source for 
-  Claude exception analysis.
+Key context functions:
+- `list_inventory_items_for_warehouse/1` — all SKUs for a warehouse, ordered by SKU
+- `get_inventory_item_by_sku/2` — specific SKU at a specific warehouse
+- `low_stock_items/0` — items where `quantity_on_hand <= reorder_point` across all warehouses. Primary data source for Claude exception analysis.
+
+---
+
+## Seed Data
+500 orders across 6 warehouses, 25 customers, and 5 carriers with narrative patterns
+baked in for meaningful Claude analysis:
+
+- **Memphis warehouse:** ~25% exception rate vs ~8% network average — signals staffing or process issues
+- **UPS carrier outage:** Cluster of shipping exceptions on a specific date
+- **Promo volume spike:** 2x order rate during a 7-day period ~6 weeks ago
+- **Low stock:** Columbus and Memphis warehouses have several SKUs at or below reorder point
+- **Order items:** Each order has 1-4 line items with realistic SKUs, quantities, and weights
+
+Re-running seeds clears all existing data first. Safe to run multiple times.
 
 ---
 
@@ -185,6 +146,7 @@ be deleted until inventory is cleared.
 - Elixir 1.14+
 - Phoenix 1.7+
 - PostgreSQL running on port 5432
+- Anthropic API key (get one at https://console.anthropic.com)
 
 ### Install dependencies
 ```bash
@@ -199,37 +161,34 @@ password: "postgres",
 hostname: "localhost"
 ```
 
-### Environment Variables
-The Claude API requires an Anthropic API key. Set it before starting the server:
-
-**Windows:**
-Create a `run_server.bat` file (already in `.gitignore`) with:
-set ANTHROPIC_API_KEY=your_anthropic_api_key_here
-iex.bat -S mix phx.server
-
-Get your API key at https://console.anthropic.com
-
 ### Create and migrate database
 ```bash
 mix ecto.create
 mix ecto.migrate
 ```
 
+### Environment Variables
+Create a `run_server.bat` file in the project root (already in `.gitignore`):
+```bat
+set ANTHROPIC_API_KEY=your_anthropic_api_key_here
+iex.bat -S mix phx.server
+```
+
 ### Seed with sample data
-75 realistic orders across 25 customers and 3 warehouse locations:
 ```bash
 mix run priv/repo/seeds.exs
 ```
 
-Re-running seeds clears existing orders first. Safe to run multiple times.
-
 ### Start the server
-```bash
-iex -S mix phx.server
+```bat
+run_server.bat
 ```
 
-Visit `http://localhost:4000/pipeline` for the live dashboard.  
-Visit `http://localhost:4000/orders` for order management.
+**Key URLs:**
+- `http://localhost:4000/pipeline` — live fulfillment dashboard
+- `http://localhost:4000/orders` — order management (CRUD)
+- `http://localhost:4000/warehouses` — warehouse management (CRUD)
+- `http://localhost:4000/operations` — carriers, low stock alerts, inventory by warehouse
 
 ---
 
@@ -239,28 +198,29 @@ mix test
 ```
 
 Test suite covers:
-- Context CRUD operations
-- Changeset validations (email format, status inclusion, priority inclusion, 
-  unique order number)
-- GenServer lifecycle (startup, pipeline advancement, exception triggering)
-- Supervisor crash recovery — kills a process with `Process.exit/2` and asserts 
-  the supervisor restarts it with a new PID and correct state
+- Context CRUD operations for orders, warehouses, carriers, inventory, and order items
+- Changeset validations (email format, status inclusion, priority inclusion, unique constraints)
+- GenServer lifecycle — startup, pipeline advancement, exception triggering, terminal state
+- Supervisor crash recovery — kills a process with `Process.exit/2` and asserts the supervisor restarts it with a new PID and correct state
+- LiveView dashboard — renders orders, advance and exception buttons update state in real time
 
 ---
 
 ## Known Limitations / Production TODOs
-- `order_number` is user-supplied; should be auto-generated
-- `warehouse_id` is a plain integer; a `warehouses` table is planned
-- `items` is a single jsonb object; production would use normalized `order_items`
-- Email validation is format-only; MX verification not implemented
+- `order_number` is user-supplied; should be auto-generated on order creation
 - No authentication — all routes are public
-- No pagination on order list
-- Status transitions are not enforced at the database level
-- Claude API exception analysis is planned but not yet implemented
+- Status transitions not enforced at the database level (GenServer layer only)
+- Email validation is format-only; MX verification not implemented
+- SKUs are denormalized strings; a normalized products/catalog table is planned
+- No pagination on the pipeline dashboard (orders list has pagination)
+- Claude exception analysis runs synchronously in a Task; a queue-based approach would be more robust at scale
+- `quantity_available` is a virtual field not persisted to the database
 
 ---
 
-### Security advisories
-Several dependencies have open CVEs (cowlib, mint, phoenix_live_view). 
-This is a portfolio/development project — these would be resolved before 
-any production deployment via dependency updates.
+## Security Advisories
+`phoenix_live_view` updated to 1.2.7 to resolve XSS CVE (EEF-CVE-2026-58228).
+
+`cowlib` and `mint` have open CVEs pulled in transitively via `anthropix`. No patched
+versions are available upstream at time of writing. These would be resolved before
+any production deployment.
