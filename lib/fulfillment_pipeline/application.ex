@@ -16,6 +16,7 @@ defmodule FulfillmentPipeline.Application do
       {Registry, keys: :unique, name: FulfillmentPipeline.Order.Registry},
       {DynamicSupervisor,
        name: FulfillmentPipeline.Order.DynamicSupervisor, strategy: :one_for_one},
+      {Task.Supervisor, name: FulfillmentPipeline.TaskSupervisor},
       {Task, fn -> FulfillmentPipeline.Order.Hydrator.start_all() end},
       # Start a worker by calling: FulfillmentPipeline.Worker.start_link(arg)
       # {FulfillmentPipeline.Worker, arg},

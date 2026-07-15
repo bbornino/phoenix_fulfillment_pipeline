@@ -17,6 +17,22 @@
   
   <:col :let={order} label="Ship Date">{order.estimated_ship_date}</:col>
   
+  <:col :let={order} label="Analysis">
+    <%= if order.status == "exception" do %>
+      <%= if order.exception_analysis && order.exception_analysis != "Analyzing..." do %>
+        <span style="font-size: 0.75rem; color: #6b7280;">✓ Analysis available</span>
+      <% else %>
+        <.button
+          phx-click="analyze_exception"
+          phx-value-id={order.id}
+          style="font-size: 0.75rem; padding: 2px 8px;"
+        >
+          {if order.exception_analysis == "Analyzing...", do: "Analyzing...", else: "Analyze"}
+        </.button>
+      <% end %>
+    <% end %>
+  </:col>
+  
   <:action :let={order}>
     <.button phx-click="advance" phx-value-id={order.id}>
       Advance
@@ -29,3 +45,15 @@
     </.button>
   </:action>
 </.table>
+
+<%= for order <- @orders, order.status == "exception",
+    order.exception_analysis && order.exception_analysis != "Analyzing..." do %>
+  <div style="margin-top: 1.5rem; padding: 1rem; border: 1px solid #ef4444;
+              border-radius: 8px; background: #fef2f2;">
+    <div style="font-weight: 600; color: #ef4444; margin-bottom: 0.5rem;">
+      Exception Analysis — {order.order_number}
+    </div>
+     <pre style="white-space: pre-wrap; font-size: 0.8rem; color: #374151;
+                font-family: inherit;">{order.exception_analysis}</pre>
+  </div>
+<% end %>
