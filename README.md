@@ -216,11 +216,4 @@ Test suite covers:
 - Claude exception analysis runs synchronously in a Task; a queue-based approach would be more robust at scale
 - `quantity_available` is a virtual field not persisted to the database
 
----
 
-## Security Advisories
-`phoenix_live_view` updated to 1.2.7 to resolve XSS CVE (EEF-CVE-2026-58228).
-
-`cowlib` and `mint` have open CVEs pulled in transitively via `anthropix`. No patched
-versions are available upstream at time of writing. These would be resolved before
-any production deployment.
