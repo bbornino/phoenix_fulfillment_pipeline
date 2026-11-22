@@ -1,39 +1,37 @@
 <.header>
   Order {@order.order_number}
   <:actions>
-    <.link href={~p"/orders/#{@order}/edit"}>
-      <.button>Edit order</.button>
-    </.link>
+    <.button id="back-to-orders" navigate={~p"/orders"}>
+      <.icon name="hero-arrow-left" class="size-4" /> Back to orders
+    </.button>
+    <.button id="edit-order" navigate={~p"/orders/#{@order}/edit"}>Edit order</.button>
   </:actions>
 </.header>
 
-<.list>
-  <:item title="Order number">{@order.order_number}</:item>
-  
-  <:item title="Customer name">{@order.customer_name}</:item>
-  
-  <:item title="Customer email">{@order.customer_email}</:item>
-  
-  <:item title="Status"><span style={status_color(@order.status)}>{@order.status}</span></:item>
-  
-  <:item title="Priority">{@order.priority}</:item>
-  
-  <:item title="Notes">{@order.notes}</:item>
-  
-  <:item title="Requires signature">{@order.requires_signature}</:item>
-  
-  <:item title="Estimated ship date">{@order.estimated_ship_date}</:item>
-  
-  <:item title="Warehouse">
-    {if @order.warehouse, do: @order.warehouse.name, else: "Unknown"}
-  </:item>
-  
-  <:item title="Carrier">
-    {if @order.carrier, do: @order.carrier.name, else: "Not assigned"}
-  </:item>
-  
-  <:item title="Tracking number">
+<div id="order-details">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-x-6">
+    <.detail label="Order number" class="md:col-span-2">{@order.order_number}</.detail>
+    <.detail label="Status">
+      <span style={status_color(@order.status)}>{@order.status}</span>
+    </.detail>
+    <.detail label="Requires signature">
+      {if @order.requires_signature, do: "Yes", else: "No"}
+    </.detail>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+    <.detail label="Customer name">{@order.customer_name}</.detail>
+    <.detail label="Customer email">{@order.customer_email}</.detail>
+    <.detail label="Priority">{@order.priority}</.detail>
+    <.detail label="Warehouse">
+      {if @order.warehouse, do: @order.warehouse.name, else: "Unknown"}
+    </.detail>
+    <.detail label="Estimated ship date">{@order.estimated_ship_date}</.detail>
+    <.detail label="Carrier">
+      {if @order.carrier, do: @order.carrier.name, else: "Not assigned"}
+    </.detail>
+  </div>
+  <.detail label="Tracking number">
     {if @order.tracking_number, do: @order.tracking_number, else: "Not assigned"}
-  </:item>
-</.list>
- <.link navigate={~p"/orders"}>Back to orders</.link>
+  </.detail>
+  <.detail label="Notes"><span class="whitespace-pre-wrap">{@order.notes}</span></.detail>
+</div>
