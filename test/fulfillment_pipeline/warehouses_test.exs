@@ -8,7 +8,16 @@ defmodule FulfillmentPipeline.WarehousesTest do
 
     import FulfillmentPipeline.WarehousesFixtures
 
-    @invalid_attrs %{active: nil, name: nil, state: nil, zip: nil, city: nil, capacity: nil, manager_name: nil, manager_email: nil}
+    @invalid_attrs %{
+      active: nil,
+      name: nil,
+      state: nil,
+      zip: nil,
+      city: nil,
+      capacity: nil,
+      manager_name: nil,
+      manager_email: nil
+    }
 
     test "list_warehouses/0 returns all warehouses" do
       warehouse = warehouse_fixture()
@@ -21,7 +30,16 @@ defmodule FulfillmentPipeline.WarehousesTest do
     end
 
     test "create_warehouse/1 with valid data creates a warehouse" do
-      valid_attrs = %{active: true, name: "some name", state: "some state", zip: "some zip", city: "some city", capacity: 42, manager_name: "some manager_name", manager_email: "some manager_email"}
+      valid_attrs = %{
+        active: true,
+        name: "some name",
+        state: "some state",
+        zip: "some zip",
+        city: "some city",
+        capacity: 42,
+        manager_name: "some manager_name",
+        manager_email: "some manager_email"
+      }
 
       assert {:ok, %Warehouse{} = warehouse} = Warehouses.create_warehouse(valid_attrs)
       assert warehouse.active == true
@@ -40,9 +58,21 @@ defmodule FulfillmentPipeline.WarehousesTest do
 
     test "update_warehouse/2 with valid data updates the warehouse" do
       warehouse = warehouse_fixture()
-      update_attrs = %{active: false, name: "some updated name", state: "some updated state", zip: "some updated zip", city: "some updated city", capacity: 43, manager_name: "some updated manager_name", manager_email: "some updated manager_email"}
 
-      assert {:ok, %Warehouse{} = warehouse} = Warehouses.update_warehouse(warehouse, update_attrs)
+      update_attrs = %{
+        active: false,
+        name: "some updated name",
+        state: "some updated state",
+        zip: "some updated zip",
+        city: "some updated city",
+        capacity: 43,
+        manager_name: "some updated manager_name",
+        manager_email: "some updated manager_email"
+      }
+
+      assert {:ok, %Warehouse{} = warehouse} =
+               Warehouses.update_warehouse(warehouse, update_attrs)
+
       assert warehouse.active == false
       assert warehouse.name == "some updated name"
       assert warehouse.state == "some updated state"

@@ -19,6 +19,15 @@ defmodule FulfillmentPipeline.Warehouses.Warehouse do
   def changeset(warehouse, attrs) do
     warehouse
     |> cast(attrs, [:name, :city, :state, :zip, :capacity, :active, :manager_name, :manager_email])
-    |> validate_required([:name, :city, :state, :zip, :capacity, :active, :manager_name, :manager_email])
+    |> validate_required([
+      :name,
+      :city,
+      :state,
+      :zip,
+      :capacity,
+      :active,
+      :manager_name,
+      :manager_email
+    ])
   end
 end

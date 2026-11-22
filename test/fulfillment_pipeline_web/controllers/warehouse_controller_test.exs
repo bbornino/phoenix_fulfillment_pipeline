@@ -3,9 +3,36 @@ defmodule FulfillmentPipelineWeb.WarehouseControllerTest do
 
   import FulfillmentPipeline.WarehousesFixtures
 
-  @create_attrs %{active: true, name: "some name", state: "some state", zip: "some zip", city: "some city", capacity: 42, manager_name: "some manager_name", manager_email: "some manager_email"}
-  @update_attrs %{active: false, name: "some updated name", state: "some updated state", zip: "some updated zip", city: "some updated city", capacity: 43, manager_name: "some updated manager_name", manager_email: "some updated manager_email"}
-  @invalid_attrs %{active: nil, name: nil, state: nil, zip: nil, city: nil, capacity: nil, manager_name: nil, manager_email: nil}
+  @create_attrs %{
+    active: true,
+    name: "some name",
+    state: "some state",
+    zip: "some zip",
+    city: "some city",
+    capacity: 42,
+    manager_name: "some manager_name",
+    manager_email: "some manager_email"
+  }
+  @update_attrs %{
+    active: false,
+    name: "some updated name",
+    state: "some updated state",
+    zip: "some updated zip",
+    city: "some updated city",
+    capacity: 43,
+    manager_name: "some updated manager_name",
+    manager_email: "some updated manager_email"
+  }
+  @invalid_attrs %{
+    active: nil,
+    name: nil,
+    state: nil,
+    zip: nil,
+    city: nil,
+    capacity: nil,
+    manager_name: nil,
+    manager_email: nil
+  }
 
   describe "index" do
     test "lists all warehouses", %{conn: conn} do
