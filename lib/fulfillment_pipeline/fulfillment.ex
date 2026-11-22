@@ -8,18 +8,80 @@ defmodule FulfillmentPipeline.Fulfillment do
 
   alias FulfillmentPipeline.Fulfillment.Order
 
+  @status_order ~w(received picking packing shipping delivered exception)
+  @priority_order ~w(standard expedited overnight)
+
+  @sort_fields %{
+    "order_number" => :order_number,
+    "customer_name" => :customer_name,
+    "status" => :status,
+    "priority" => :priority,
+    "estimated_ship_date" => :estimated_ship_date
+  }
+
   @doc """
-  Returns the list of orders.
+  Returns the order statuses in pipeline order.
+  """
+  def order_statuses, do: @status_order
+
+  @doc """
+  Returns a page of orders.
+
+  Accepts string-keyed params:
+
+    * `"search"` - matches order number or customer name (case-insensitive)
+    * `"status"` - exact status match
+    * `"sort"` / `"dir"` - one of #{inspect(Map.keys(@sort_fields))}, and `"asc"` or `"desc"`.
+      Status sorts in pipeline order and priority by urgency. Unsorted results are ordered by id.
+    * `"page"` - page number (20 per page)
 
   ## Examples
 
-      iex> list_orders()
-      [%Order{}, ...]
+      iex> list_orders(%{"status" => "picking", "sort" => "priority", "dir" => "desc"})
+      %Scrivener.Page{entries: [%Order{}, ...]}
 
   """
   def list_orders(params \\ %{}) do
-    Order |> preload([:warehouse, :carrier]) |> Repo.paginate(params)
+    Order
+    |> filter_by_search(params["search"])
+    |> filter_by_status(params["status"])
+    |> sort_orders(params["sort"], params["dir"])
+    |> preload([:warehouse, :carrier])
+    |> Repo.paginate(params)
   end
+
+  defp filter_by_search(query, search) when is_binary(search) and search != "" do
+    pattern = "%" <> escape_like(String.trim(search)) <> "%"
+    where(query, [o], ilike(o.order_number, ^pattern) or ilike(o.customer_name, ^pattern))
+  end
+
+  defp filter_by_search(query, _search), do: query
+
+  defp filter_by_status(query, status) when status in @status_order,
+    do: where(query, [o], o.status == ^status)
+
+  defp filter_by_status(query, _status), do: query
+
+  defp sort_orders(query, field, dir)
+       when is_map_key(@sort_fields, field) and dir in ~w(asc desc) do
+    direction = if dir == "asc", do: :asc, else: :desc
+
+    query
+    |> order_by(^[{direction, sort_expression(@sort_fields[field])}])
+    |> order_by(asc: :id)
+  end
+
+  defp sort_orders(query, _field, _dir), do: order_by(query, asc: :id)
+
+  defp sort_expression(:status),
+    do: dynamic([o], fragment("array_position(?::text[], ?::text)", ^@status_order, o.status))
+
+  defp sort_expression(:priority),
+    do: dynamic([o], fragment("array_position(?::text[], ?::text)", ^@priority_order, o.priority))
+
+  defp sort_expression(field), do: dynamic([o], field(o, ^field))
+
+  defp escape_like(text), do: String.replace(text, ~r/[\\%_]/, "\\\\\\0")
 
   def list_active_orders do
     import Ecto.Query

@@ -5,14 +5,29 @@ defmodule FulfillmentPipelineWeb.OrderLive do
   alias FulfillmentPipeline.Order.Server
   alias FulfillmentPipeline.Order.ExceptionAnalyzer
 
+  @filter_keys ~w(search status sort dir page)
+
   @impl true
   def mount(_params, _session, socket) do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(FulfillmentPipeline.PubSub, "orders")
     end
 
-    orders = Fulfillment.list_orders().entries
-    {:ok, assign(socket, orders: orders)}
+    {:ok, assign(socket, statuses: Fulfillment.order_statuses())}
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    filters = Map.take(params, @filter_keys)
+    page = Fulfillment.list_orders(filters)
+
+    {:noreply,
+     assign(socket,
+       orders: page.entries,
+       page: page,
+       filters: filters,
+       filter_form: to_form(Map.take(filters, ~w(search status)))
+     )}
   end
 
   @impl true
@@ -71,6 +86,58 @@ defmodule FulfillmentPipelineWeb.OrderLive do
     end)
 
     {:noreply, assign(socket, orders: orders)}
+  end
+
+  @impl true
+  def handle_event("filter", params, socket) do
+    filters =
+      socket.assigns.filters
+      |> Map.merge(Map.take(params, ~w(search status)))
+      |> Map.delete("page")
+
+    {:noreply, push_patch(socket, to: pipeline_path(filters))}
+  end
+
+  attr :field, :string, required: true
+  attr :label, :string, required: true
+  attr :filters, :map, required: true
+
+  defp sort_header(assigns) do
+    assigns = assign(assigns, :dir, sort_dir(assigns.filters, assigns.field))
+
+    ~H"""
+    <.link
+      id={"sort-#{@field}"}
+      patch={pipeline_path(next_sort(@filters, @field))}
+      class="inline-flex items-center gap-1 hover:text-blue-600"
+    >
+      {@label}
+      <.icon :if={@dir == "asc"} name="hero-arrow-up" class="size-3" />
+      <.icon :if={@dir == "desc"} name="hero-arrow-down" class="size-3" />
+    </.link>
+    """
+  end
+
+  defp sort_dir(%{"sort" => field, "dir" => dir}, field), do: dir
+  defp sort_dir(_filters, _field), do: nil
+
+  # Cycles a column: unsorted -> asc -> desc -> unsorted. Changing sort resets to page 1.
+  defp next_sort(filters, field) do
+    base = Map.drop(filters, ~w(sort dir page))
+
+    case sort_dir(filters, field) do
+      "asc" -> Map.merge(base, %{"sort" => field, "dir" => "desc"})
+      "desc" -> base
+      _ -> Map.merge(base, %{"sort" => field, "dir" => "asc"})
+    end
+  end
+
+  defp page_link(filters, page_number), do: pipeline_path(Map.put(filters, "page", page_number))
+
+  defp pipeline_path(filters) do
+    query = Map.reject(filters, fn {_key, value} -> value in [nil, ""] end)
+
+    if query == %{}, do: ~p"/pipeline", else: ~p"/pipeline?#{query}"
   end
 
   defp status_color("received"), do: "#888"

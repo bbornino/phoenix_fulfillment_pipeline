@@ -9,3 +9,6 @@ erl_crash.dump
 /config/*.secret.exs
 .elixir_ls/
 run_server.bat
+
+# Build output from esbuild/tailwind (rebuilt on `mix phx.server` / `mix assets.deploy`)
+/priv/static/assets/

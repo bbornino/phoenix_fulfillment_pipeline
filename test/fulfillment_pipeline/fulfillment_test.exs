@@ -32,6 +32,86 @@ defmodule FulfillmentPipeline.FulfillmentTest do
       assert hd(page.entries).id == order.id
     end
 
+    test "list_orders/1 with no sort returns orders by id" do
+      first = order_fixture()
+      second = order_fixture()
+      assert ids(Fulfillment.list_orders(%{})) == [first.id, second.id]
+    end
+
+    test "list_orders/1 searches order number and customer name case-insensitively" do
+      by_number = order_fixture(%{order_number: "ORD-FIND-ME"})
+      by_name = order_fixture(%{customer_name: "Findley Smith"})
+      _other = order_fixture(%{customer_name: "Someone Else"})
+
+      assert ids(Fulfillment.list_orders(%{"search" => "find"})) == [by_number.id, by_name.id]
+    end
+
+    test "list_orders/1 treats LIKE wildcards in search as literal text" do
+      order_fixture(%{customer_name: "Plain Name"})
+      assert ids(Fulfillment.list_orders(%{"search" => "%"})) == []
+    end
+
+    test "list_orders/1 filters by status and ignores unknown statuses" do
+      picking = order_fixture(%{status: "picking"})
+      received = order_fixture(%{status: "received"})
+
+      assert ids(Fulfillment.list_orders(%{"status" => "picking"})) == [picking.id]
+
+      assert ids(Fulfillment.list_orders(%{"status" => "bogus"})) == [
+               picking.id,
+               received.id
+             ]
+    end
+
+    test "list_orders/1 sorts status in pipeline order, both directions" do
+      shipping = order_fixture(%{status: "shipping"})
+      received = order_fixture(%{status: "received"})
+      exception = order_fixture(%{status: "exception"})
+
+      asc = %{"sort" => "status", "dir" => "asc"}
+      desc = %{"sort" => "status", "dir" => "desc"}
+
+      assert ids(Fulfillment.list_orders(asc)) == [received.id, shipping.id, exception.id]
+      assert ids(Fulfillment.list_orders(desc)) == [exception.id, shipping.id, received.id]
+    end
+
+    test "list_orders/1 sorts priority by urgency" do
+      overnight = order_fixture(%{priority: "overnight"})
+      standard = order_fixture(%{priority: "standard"})
+      expedited = order_fixture(%{priority: "expedited"})
+
+      assert ids(Fulfillment.list_orders(%{"sort" => "priority", "dir" => "asc"})) ==
+               [standard.id, expedited.id, overnight.id]
+    end
+
+    test "list_orders/1 sorts by customer name and ship date" do
+      zed = order_fixture(%{customer_name: "Zed", estimated_ship_date: ~D[2026-01-01]})
+      amy = order_fixture(%{customer_name: "Amy", estimated_ship_date: ~D[2026-12-31]})
+
+      assert ids(Fulfillment.list_orders(%{"sort" => "customer_name", "dir" => "asc"})) ==
+               [amy.id, zed.id]
+
+      assert ids(Fulfillment.list_orders(%{"sort" => "estimated_ship_date", "dir" => "desc"})) ==
+               [amy.id, zed.id]
+    end
+
+    test "list_orders/1 ignores unknown sort fields" do
+      first = order_fixture()
+      second = order_fixture()
+
+      assert ids(Fulfillment.list_orders(%{"sort" => "notes", "dir" => "desc"})) ==
+               [first.id, second.id]
+    end
+
+    test "list_orders/1 sorts across pages, not just within one" do
+      for _ <- 1..20, do: order_fixture(%{status: "received"})
+      last_inserted = order_fixture(%{status: "exception"})
+
+      page = Fulfillment.list_orders(%{"sort" => "status", "dir" => "desc"})
+      assert page.total_pages == 2
+      assert hd(page.entries).id == last_inserted.id
+    end
+
     test "get_order!/1 returns the order with given id" do
       order = order_fixture()
       assert Fulfillment.get_order!(order.id) == order
@@ -216,4 +296,6 @@ defmodule FulfillmentPipeline.FulfillmentTest do
       assert %{order_number: ["has already been taken"]} = errors_on(changeset)
     end
   end
+
+  defp ids(page), do: Enum.map(page.entries, & &1.id)
 end
