@@ -1,5 +1,10 @@
 <.header>
   Edit Order {@order.order_number}
+  <:actions>
+    <.button id="back-to-orders" navigate={~p"/orders"}>
+      <.icon name="hero-arrow-left" class="size-4" /> Back to orders
+    </.button>
+  </:actions>
 </.header>
 
 <.order_form
@@ -7,4 +12,4 @@
   action={~p"/orders/#{@order}"}
   warehouses={@warehouses}
   carriers={@carriers}
-/> <.link navigate={~p"/orders"}>Back to orders</.link>
+/>
